@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRANAM.SYS // Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#080b0f;--bg2:#0d1117;--surface:#111820;--surface2:#162030;
+  --ink:#e8edf3;--mid:#8b9bb4;--muted:#445566;
+  --accent:#00d4ff;--accent2:#0066ff;--accent3:#00ff88;
+  --border:#1e2d3d;
+  --glow:0 0 20px rgba(0,212,255,0.3);--glow2:0 0 40px rgba(0,212,255,0.15);
+}
+html{scroll-behavior:smooth;cursor:none;}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;overflow-x:hidden;}
+
+#cursor{position:fixed;width:12px;height:12px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .2s,height .2s,background .2s;}
+#cursor-ring{position:fixed;width:36px;height:36px;border:1.5px solid rgba(0,212,255,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s;}
+#cursor.hover{width:20px;height:20px;background:var(--accent3);}
+#cursor-ring.hover{width:56px;height:56px;border-color:var(--accent3);}
+#cursor.click{transform:translate(-50%,-50%) scale(0.6);}
+.trail{position:fixed;border-radius:50%;background:var(--accent);pointer-events:none;z-index:9997;transform:translate(-50%,-50%);opacity:0;}
+
+#canvas-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.4;pointer-events:none;}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");pointer-events:none;z-index:1;opacity:.3;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:2;}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:18px 48px;border-bottom:1px solid var(--border);background:rgba(8,11,15,.88);backdrop-filter:blur(20px);}
+.nav-logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--accent);text-decoration:none;letter-spacing:2px;text-transform:uppercase;}
+.nav-logo span{color:var(--ink);opacity:.35;}
+.nav-links{display:flex;gap:32px;list-style:none;align-items:center;}
+.nav-links a{font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--mid);text-decoration:none;transition:color .2s;position:relative;}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--accent);transition:width .3s;}
+.nav-links a:hover{color:var(--accent);}
+.nav-links a:hover::after{width:100%;}
+.nav-status{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--accent3);letter-spacing:1px;}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse-dot 2s infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,255,136,.4);}50%{opacity:.7;box-shadow:0 0 0 6px rgba(0,255,136,0);}}
+
+.hero{min-height:100vh;display:flex;align-items:center;padding:0 48px;position:relative;z-index:10;max-width:1200px;margin:0 auto;}
+.hero-meta{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:24px;opacity:0;animation:fadeUp .5s .2s forwards;}
+.hero-meta::before{content:'> ';}
+.hero-name{font-family:'Syne',sans-serif;font-size:clamp(56px,10vw,120px);font-weight:800;line-height:.92;letter-spacing:-3px;color:var(--ink);margin-bottom:8px;opacity:0;animation:fadeUp .6s .3s forwards;}
+.hero-name .outline{color:transparent;-webkit-text-stroke:1.5px var(--accent);}
+.glitch-wrap{position:relative;display:inline-block;}
+.glitch-wrap::before,.glitch-wrap::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;}
+.glitch-wrap::before{color:var(--accent2);animation:glitch1 3.5s infinite;clip-path:polygon(0 20%,100% 20%,100% 40%,0 40%);}
+.glitch-wrap::after{color:var(--accent3);animation:glitch2 3.5s infinite;clip-path:polygon(0 60%,100% 60%,100% 78%,0 78%);}
+@keyframes glitch1{0%,88%,100%{transform:translate(0);}90%{transform:translate(-4px,1px);}93%{transform:translate(4px,-1px);}96%{transform:translate(-2px,2px);}}
+@keyframes glitch2{0%,85%,100%{transform:translate(0);}87%{transform:translate(4px,-2px);}91%{transform:translate(-4px,1px);}95%{transform:translate(3px,-2px);}}
+.hero-sub{font-size:clamp(14px,1.8vw,18px);color:var(--mid);font-weight:300;margin-bottom:48px;opacity:0;animation:fadeUp .6s .45s forwards;}
+.typed-text{color:var(--accent3);}
+.blink{display:inline-block;width:2px;height:1.1em;background:var(--accent3);vertical-align:middle;animation:blink-a .8s infinite;margin-left:2px;}
+@keyframes blink-a{0%,100%{opacity:1;}50%{opacity:0;}}
+.hero-cta{display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:fadeUp .6s .6s forwards;}
+.btn-mag{position:relative;overflow:hidden;padding:14px 32px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;transition:transform .2s,box-shadow .2s;cursor:none;display:inline-flex;align-items:center;gap:8px;border:none;}
+.btn-p{background:var(--accent);color:#000;box-shadow:0 0 30px rgba(0,212,255,.3);}
+.btn-p:hover{box-shadow:0 0 50px rgba(0,212,255,.6);}
+.btn-o{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+.btn-o:hover{background:rgba(0,212,255,.06);}
+.btn-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.2);transform:scale(0);animation:ripple-a .6s linear;pointer-events:none;}
+@keyframes ripple-a{to{transform:scale(4);opacity:0;}}
+.hero-stats{display:flex;gap:48px;margin-top:64px;opacity:0;animation:fadeUp .6s .75s forwards;}
+.stat-num{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;color:var(--accent);line-height:1;margin-bottom:4px;}
+.stat-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.scroll-ind{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;opacity:0;animation:fadeIn 1s 1.2s forwards;z-index:10;}
+.scroll-line{width:1px;height:48px;background:linear-gradient(to bottom,var(--accent),transparent);animation:scroll-d 2s infinite;}
+@keyframes scroll-d{0%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);transform-origin:top;}51%{transform-origin:bottom;}100%{transform:scaleY(0);transform-origin:bottom;}}
+
+.sec{position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:100px 48px;}
+.sec-dark{position:relative;z-index:10;padding:100px 0;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.sec-dark .sec-inner{max-width:1200px;margin:0 auto;padding:0 48px;}
+.sec-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.sec-lbl::before{content:'// ';}
+.sec-h{font-family:'Syne',sans-serif;font-size:clamp(34px,5vw,58px);font-weight:800;letter-spacing:-1.5px;color:var(--ink);margin-bottom:48px;line-height:1;}
+.sec-h .dim{color:var(--muted);font-weight:400;}
+.corner{position:absolute;width:20px;height:20px;border-color:rgba(0,212,255,.3);border-style:solid;}
+.ctlr{top:16px;left:16px;border-width:1px 0 0 1px;}
+.ctrr{top:16px;right:16px;border-width:1px 1px 0 0;}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start;}
+.terminal{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:var(--glow2);}
+.t-bar{background:#111c28;padding:10px 16px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border);}
+.td{width:10px;height:10px;border-radius:50%;}
+.t-title{font-size:11px;color:var(--muted);margin-left:8px;letter-spacing:1px;}
+.t-body{padding:22px;font-size:12.5px;line-height:2.1;}
+.tp{color:var(--accent3);}
+.tc{color:var(--accent);}
+.to{color:var(--mid);}
+.th{color:var(--ink);}
+.ts{color:#ffbd2e;}
+.about-text p{color:var(--mid);font-size:14px;font-weight:300;margin-bottom:18px;line-height:1.85;}
+.skill-sec{margin-top:32px;}
+.skill-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.skill-chips{display:flex;flex-wrap:wrap;gap:10px;}
+.chip{font-size:11px;font-weight:500;letter-spacing:1px;color:var(--accent);background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.18);padding:6px 14px;border-radius:4px;}
+
+/* TIMELINE */
+.tl-item{display:grid;grid-template-columns:180px 1fr;gap:40px;padding:40px 0;border-bottom:1px solid var(--border);position:relative;}
+.tl-item::before{content:'';position:absolute;left:179px;top:0;bottom:0;width:1px;background:var(--border);}
+.tl-item::after{content:'';position:absolute;left:173px;top:44px;width:13px;height:13px;border-radius:50%;background:var(--bg2);border:2px solid var(--accent);box-shadow:0 0 14px var(--accent);z-index:1;}
+.tl-item:last-child{border-bottom:none;}
+.tl-co{font-size:11px;font-weight:600;color:var(--ink);letter-spacing:1px;margin-bottom:4px;}
+.tl-dt{font-size:10px;color:var(--muted);letter-spacing:1px;}
+.tl-badge{display:inline-block;margin-top:8px;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent3);background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);padding:3px 8px;border-radius:3px;}
+.tl-role{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--ink);margin-bottom:14px;letter-spacing:-.5px;}
+.tl-pts{list-style:none;}
+.tl-pts li{font-size:13px;color:var(--mid);font-weight:300;padding-left:18px;position:relative;margin-bottom:8px;line-height:1.7;}
+.tl-pts li::before{content:'▸';position:absolute;left:0;color:var(--accent);font-size:10px;top:3px;}
+
+/* PROJECTS */
+.proj-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:36px;position:relative;overflow:hidden;transition:background .3s;cursor:none;}
+.proj-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(0,212,255,.06) 0%,transparent 65%);opacity:0;transition:opacity .3s;}
+.proj-card:hover{background:var(--surface2);}
+.proj-card:hover::before{opacity:1;}
+.proj-num{font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:18px;transition:color .3s;}
+.proj-card:hover .proj-num{color:var(--accent);}
+.proj-icon{font-size:30px;margin-bottom:14px;display:block;}
+.proj-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--ink);margin-bottom:12px;}
+.proj-desc{font-size:13px;color:var(--mid);font-weight:300;line-height:1.8;margin-bottom:24px;}
+.proj-grid-mini{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+.proj-mini-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:16px;}
+.proj-mini-lbl{font-size:10px;color:var(--accent3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.proj-mini-val{font-size:12.5px;color:var(--mid);line-height:1.6;}
+.proj-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;}
+.proj-tag{font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--accent);background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.15);padding:4px 10px;border-radius:3px;}
+
+/* CERTS */
+.cert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.cert-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:22px;display:flex;align-items:flex-start;gap:14px;transition:border-color .3s,box-shadow .3s,transform .3s;cursor:none;}
+.cert-card:hover{border-color:var(--accent);box-shadow:var(--glow);transform:translateY(-3px);}
+.cert-ico{width:42px;height:42px;flex-shrink:0;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.cert-name{font-size:12.5px;font-weight:500;color:var(--ink);margin-bottom:3px;line-height:1.4;}
+.cert-meta{font-size:11px;color:var(--muted);}
+.cert-click{font-size:10px;color:var(--accent);margin-top:6px;letter-spacing:1px;}
+
+/* CERT MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;backdrop-filter:blur(8px);align-items:center;justify-content:center;}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;max-width:560px;width:90%;padding:32px;position:relative;box-shadow:0 0 60px rgba(0,212,255,.15);}
+.modal-close{position:absolute;top:16px;right:16px;background:transparent;border:1px solid var(--border);color:var(--mid);font-size:18px;width:32px;height:32px;border-radius:4px;cursor:none;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;line-height:1;transition:border-color .2s,color .2s;}
+.modal-close:hover{border-color:var(--accent);color:var(--accent);}
+.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.modal-meta{font-size:11px;color:var(--muted);margin-bottom:20px;letter-spacing:1px;}
+.modal-body{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;text-align:center;}
+.modal-note{font-size:12px;color:var(--mid);margin-bottom:16px;line-height:1.7;}
+
+/* EDU */
+.edu-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.edu-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:32px;position:relative;overflow:hidden;transition:border-color .3s;cursor:none;}
+.edu-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));transform:scaleX(0);transform-origin:left;transition:transform .4s;}
+.edu-card:hover{border-color:rgba(0,212,255,.3);}
+.edu-card:hover::after{transform:scaleX(1);}
+.edu-tag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--accent3);background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);padding:3px 9px;border-radius:3px;margin-bottom:14px;}
+.edu-school{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.edu-deg{font-size:12.5px;color:var(--mid);margin-bottom:10px;font-weight:300;}
+.edu-loc{font-size:11px;color:var(--muted);}
+.edu-score{font-family:'Syne',sans-serif;font-size:44px;font-weight:800;color:var(--accent);line-height:1;margin-top:14px;}
+
+/* CONTACT */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.contact-left p{font-size:15px;color:var(--mid);font-weight:300;line-height:1.85;max-width:400px;}
+.contact-avail{margin-top:32px;font-size:12px;color:var(--muted);}
+.contact-avail .lbl{color:var(--accent3);margin-bottom:8px;}
+.contact-avail div{margin-bottom:4px;}
+.contact-links{display:flex;flex-direction:column;gap:14px;}
+.c-link{display:flex;align-items:center;gap:16px;padding:18px 22px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-decoration:none;transition:border-color .3s,box-shadow .3s,transform .3s;cursor:none;}
+.c-link:hover{border-color:var(--accent);box-shadow:var(--glow);transform:translateX(6px);}
+.c-ico{font-size:18px;width:42px;height:42px;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.c-lbl{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;}
+.c-val{font-size:13px;color:var(--ink);}
+.c-arr{margin-left:auto;color:var(--border);transition:color .3s,transform .3s;}
+.c-link:hover .c-arr{color:var(--accent);transform:translateX(4px);}
+
+footer{text-align:center;padding:28px 48px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);position:relative;z-index:10;display:flex;justify-content:space-between;align-items:center;}
+.f-code{color:var(--accent3);}
+.hex-deco{position:absolute;top:0;right:0;width:45%;height:100%;opacity:.025;pointer-events:none;background-image:repeating-linear-gradient(60deg,var(--accent) 0,var(--accent) 1px,transparent 0,transparent 50%),repeating-linear-gradient(120deg,var(--accent) 0,var(--accent) 1px,transparent 0,transparent 50%),repeating-linear-gradient(180deg,var(--accent) 0,var(--accent) 1px,transparent 0,transparent 50%);background-size:28px 50px;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.visible{opacity:1;transform:none;}
+
+@media(max-width:900px){
+  nav{padding:14px 20px;}
+  .hero{padding:100px 20px 60px;}
+  .sec{padding:64px 20px;}
+  .sec-dark .sec-inner{padding:0 20px;}
+  .about-grid,.contact-grid,.edu-grid{grid-template-columns:1fr;}
+  .cert-grid{grid-template-columns:1fr 1fr;}
+  .tl-item{grid-template-columns:1fr;}
+  .tl-item::before,.tl-item::after{display:none;}
+  .proj-grid-mini{grid-template-columns:1fr;}
+  footer{flex-direction:column;gap:8px;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<canvas id="canvas-bg"></canvas>
+
+<nav>
+  <a href="#" class="nav-logo">PSS<span>.dev</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#certs">Certs</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-status"><div class="status-dot"></div>Available for internships</div>
+</nav>
+
+<div style="position:relative;z-index:10;overflow:hidden;">
+  <div class="hero">
+    <div>
+      <div class="hero-meta">ECS Student @ VIT Vellore &nbsp;·&nbsp; Data Analytics</div>
+      <h1 class="hero-name">
+        <span class="glitch-wrap" data-text="PRANAM">PRANAM</span><br>
+        <span class="outline">S SHAH</span>
+      </h1>
+      <p class="hero-sub">I build <span class="typed-text" id="typed"></span><span class="blink"></span></p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn-mag btn-p">View Projects</a>
+        <a href="#contact" class="btn-mag btn-o">Get in Touch</a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="stat-num" data-count="8.77" data-dec="2">0</div><div class="stat-label">CGPA</div></div>
+        <div><div class="stat-num" data-count="2" data-dec="0">0</div><div class="stat-label">Internships</div></div>
+        <div><div class="stat-num" data-count="1" data-dec="0">0</div><div class="stat-label">Projects</div></div>
+        <div><div class="stat-num" data-count="3" data-dec="0">0</div><div class="stat-label">Certifications</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-ind"><div class="scroll-line"></div>scroll</div>
+  <div class="hex-deco"></div>
+</div>
+
+<!-- ABOUT -->
+<section class="sec" id="about">
+  <div class="corner ctlr"></div><div class="corner ctrr"></div>
+  <div class="sec-lbl reveal">About</div>
+  <h2 class="sec-h reveal">Who I <span class="dim">Am</span></h2>
+  <div class="about-grid">
+    <div class="terminal reveal">
+      <div class="t-bar">
+        <div class="td" style="background:#ff5f56"></div>
+        <div class="td" style="background:#ffbd2e"></div>
+        <div class="td" style="background:#27c93f"></div>
+        <span class="t-title">pranam@vit:~$ profile.sh</span>
+      </div>
+      <div class="t-body">
+        <div><span class="tp">❯ </span><span class="tc">whoami</span></div>
+        <div><span class="to">→ <span class="th">Pranam S Shah</span></span></div>
+        <div>&nbsp;</div>
+        <div><span class="tp">❯ </span><span class="tc">cat status.json</span></div>
+        <div><span class="to">{</span></div>
+        <div><span class="to">&nbsp;&nbsp;"role": <span class="ts">"ECS Student, 2nd Year"</span>,</span></div>
+        <div><span class="to">&nbsp;&nbsp;"university": <span class="ts">"VIT Vellore"</span>,</span></div>
+        <div><span class="to">&nbsp;&nbsp;"cgpa": <span class="th">8.77</span>,</span></div>
+        <div><span class="to">&nbsp;&nbsp;"focus": <span class="ts">"Data Analytics"</span>,</span></div>
+        <div><span class="to">&nbsp;&nbsp;"openTo": <span class="ts">"Internships"</span></span></div>
+        <div><span class="to">}</span></div>
+        <div>&nbsp;</div>
+        <div><span class="tp">❯ </span><span class="tc">ls skills/</span></div>
+        <div><span class="to">python &nbsp;sql &nbsp;excel &nbsp;tableau &nbsp;pandas &nbsp;jupyter</span></div>
+        <div>&nbsp;</div>
+        <div><span class="tp">❯ </span><span style="display:inline-block;width:8px;height:14px;background:var(--accent3);vertical-align:middle;animation:blink-a .8s infinite;"></span></div>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="about-text">
+        <p>Second-year ECS student at VIT Vellore with a sharp focus on Data and Business Analytics. I turn messy datasets into clean, actionable insights — through Python notebooks, SQL queries, and dashboards that decision-makers actually use.</p>
+        <p>Across internships at Future Interns and Sri Savaliya Gold, I worked on real business data — cleaning it, analysing it, and presenting findings. My internship project analysed the Superstore dataset end-to-end: raw CSV all the way to an interactive Tableau dashboard.</p>
+        <p>Seeking roles where I can push those skills further and contribute meaningfully from day one.</p>
+      </div>
+      <div class="skill-sec">
+        <div class="skill-lbl">// tech_stack.dat</div>
+        <div class="skill-chips">
+          <span class="chip">Python</span>
+          <span class="chip">SQL</span>
+          <span class="chip">Excel</span>
+          <span class="chip">Tableau</span>
+          <span class="chip">Pandas</span>
+          <span class="chip">Jupyter</span>
+          <span class="chip">Data Cleaning</span>
+          <span class="chip">Visualisation</span>
+          <span class="chip">EDA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<div class="sec-dark" id="experience">
+  <div class="sec-inner">
+    <div class="sec-lbl reveal">Experience</div>
+    <h2 class="sec-h reveal">Work <span class="dim">History</span></h2>
+    <div>
+      <div class="tl-item reveal">
+        <div>
+          <div class="tl-co">Future Interns</div>
+          <div class="tl-dt">Jan 2026 – Feb 2026</div>
+          <span class="tl-badge">Internship</span>
+        </div>
+        <div>
+          <div class="tl-role">Data Science & Analytics Intern</div>
+          <ul class="tl-pts">
+            <li>Conducted end-to-end data analysis on the Superstore retail dataset using Python (Pandas) and Tableau.</li>
+            <li>Cleaned and processed raw CSV data, performed EDA, and built an interactive Tableau dashboard to surface KPIs and business trends.</li>
+            <li>Presented findings including revenue by region, category profitability, and discount impact on margins.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tl-item reveal">
+        <div>
+          <div class="tl-co">Sri Savaliya Gold Pvt Ltd</div>
+          <div class="tl-dt">May 2025 – Jul 2025</div>
+          <span class="tl-badge">Internship</span>
+        </div>
+        <div>
+          <div class="tl-role">Sales & Business Data Analyst</div>
+          <ul class="tl-pts">
+            <li>Analysed sales and inventory data using Excel to enhance product performance insights and support decision-making.</li>
+            <li>Maintained comprehensive sales records to facilitate informed periodic business performance assessments.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<section class="sec" id="projects">
+  <div class="sec-lbl reveal">Projects</div>
+  <h2 class="sec-h reveal">Built <span class="dim">Things</span></h2>
+  <div style="max-width:860px;">
+    <div class="proj-card reveal">
+      <div class="proj-num">01 // Python · Tableau · Data Analytics · Internship Project</div>
+      <span class="proj-icon">📊</span>
+      <div class="proj-name">Business Sales Performance Analytics</div>
+      <div class="proj-desc">End-to-end data analytics project completed during the Future Interns Data Science internship. Worked with the Superstore retail dataset — from raw CSV to cleaned data to interactive Tableau dashboard — uncovering revenue trends, regional performance gaps, and category-level profitability insights.</div>
+      <div class="proj-grid-mini">
+        <div class="proj-mini-card">
+          <div class="proj-mini-lbl">// Dataset</div>
+          <div class="proj-mini-val">Sample Superstore (Retail) — ~10,000 rows of orders, sales, profit, and shipping data across US regions and product categories.</div>
+        </div>
+        <div class="proj-mini-card">
+          <div class="proj-mini-lbl">// Deliverables</div>
+          <div class="proj-mini-val">Cleaned Excel file, Python Jupyter notebook (EDA + analysis), and interactive Tableau dashboard (.twbx).</div>
+        </div>
+        <div class="proj-mini-card">
+          <div class="proj-mini-lbl">// Analysis Done</div>
+          <div class="proj-mini-val">Revenue and profit trends by region, category, and sub-category. Identified high-discount, low-profit segments dragging overall margins.</div>
+        </div>
+        <div class="proj-mini-card">
+          <div class="proj-mini-lbl">// Key Insight</div>
+          <div class="proj-mini-val">Tables and Bookcases sub-category ran at a consistent loss despite high sales volume — flagged for strategic repricing.</div>
+        </div>
+      </div>
+      <div class="proj-tags">
+        <span class="proj-tag">Python</span>
+        <span class="proj-tag">Pandas</span>
+        <span class="proj-tag">Jupyter</span>
+        <span class="proj-tag">Tableau</span>
+        <span class="proj-tag">Excel</span>
+        <span class="proj-tag">EDA</span>
+        <span class="proj-tag">Data Cleaning</span>
+      </div>
+      <a href="https://github.com/pranamshah/FUTURE_DS_01" target="_blank" class="btn-mag btn-o" style="padding:10px 22px;font-size:11px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CERTS -->
+<div class="sec-dark" id="certs">
+  <div class="sec-inner">
+    <div class="sec-lbl reveal">Certifications</div>
+    <h2 class="sec-h reveal">Verified <span class="dim">Skills</span></h2>
+    <div class="cert-grid">
+      <div class="cert-card reveal" onclick="openCert('deloitte')">
+        <div class="cert-ico">🏢</div>
+        <div>
+          <div class="cert-name">Deloitte Australia – Data Analytics Job Simulation</div>
+          <div class="cert-meta">Forage · 2026</div>
+          <div class="cert-click">click to view ↗</div>
+        </div>
+      </div>
+      <div class="cert-card reveal" onclick="openCert('sql')">
+        <div class="cert-ico">🗄️</div>
+        <div>
+          <div class="cert-name">Introduction to SQL</div>
+          <div class="cert-meta">Scrimba · 2025</div>
+          <div class="cert-click">click to view ↗</div>
+        </div>
+      </div>
+      <div class="cert-card reveal" onclick="openCert('excel')">
+        <div class="cert-ico">📗</div>
+        <div>
+          <div class="cert-name">Microsoft Excel Certification</div>
+          <div class="cert-meta">Microsoft</div>
+          <div class="cert-click">click to view ↗</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CERT MODAL -->
+<div id="cert-modal" class="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeCert()">×</button>
+    <div id="modal-title" class="modal-title"></div>
+    <div id="modal-meta" class="modal-meta"></div>
+    <div class="modal-body">
+      <div class="modal-note">This certificate is hosted on LinkedIn. Click below to view the full certificate on your profile.</div>
+      <a id="modal-link" href="#" target="_blank" class="btn-mag btn-p" style="padding:12px 24px;font-size:11px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+        View on LinkedIn
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- EDU -->
+<section class="sec" id="education">
+  <div class="sec-lbl reveal">Education</div>
+  <h2 class="sec-h reveal">Academic <span class="dim">Background</span></h2>
+  <div class="edu-grid">
+    <div class="edu-card reveal">
+      <div class="edu-tag">Current · 2024–2028</div>
+      <div class="edu-school">Vellore Institute of Technology</div>
+      <div class="edu-deg">B.Tech — Electrical & Computer Science Engineering</div>
+      <div class="edu-loc">Vellore, Tamil Nadu</div>
+      <div class="edu-score">8.77</div>
+    </div>
+    <div class="edu-card reveal">
+      <div class="edu-tag">Completed · 2024</div>
+      <div class="edu-school">Kola Saraswathi School</div>
+      <div class="edu-deg">Higher Secondary Education (Class XII)</div>
+      <div class="edu-loc">Chennai, Tamil Nadu</div>
+      <div class="edu-score">86.67%</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<div class="sec-dark" id="contact">
+  <div class="sec-inner">
+    <div class="sec-lbl reveal">Contact</div>
+    <h2 class="sec-h reveal">Let's <span class="dim">Connect</span></h2>
+    <div class="contact-grid">
+      <div class="reveal">
+        <p>Open to internship opportunities in data analytics, business intelligence, and engineering. Reach out — I respond fast.</p>
+        <div class="contact-avail">
+          <div class="lbl">// currently_available_for</div>
+          <div>→ Data Analytics Internships</div>
+          <div>→ Business Intelligence Roles</div>
+          <div>→ Engineering Positions</div>
+        </div>
+      </div>
+      <div class="contact-links reveal">
+        <a href="mailto:shahpranam31@gmail.com" class="c-link">
+          <div class="c-ico">✉️</div>
+          <div><div class="c-lbl">Email</div><div class="c-val">shahpranam31@gmail.com</div></div>
+          <div class="c-arr">→</div>
+        </a>
+        <a href="tel:+919080767398" class="c-link">
+          <div class="c-ico">📞</div>
+          <div><div class="c-lbl">Phone</div><div class="c-val">+91 9080767398</div></div>
+          <div class="c-arr">→</div>
+        </a>
+        <a href="https://www.linkedin.com/in/pranam-s-shah-245a75322" target="_blank" class="c-link">
+          <div class="c-ico">💼</div>
+          <div><div class="c-lbl">LinkedIn</div><div class="c-val">pranam-s-shah</div></div>
+          <div class="c-arr">→</div>
+        </a>
+        <a href="https://github.com/pranamshah" target="_blank" class="c-link">
+          <div class="c-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:var(--accent)"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          </div>
+          <div><div class="c-lbl">GitHub</div><div class="c-val">pranamshah</div></div>
+          <div class="c-arr">→</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>© 2026 Pranam S Shah · Chennai, India</span>
+  <span class="f-code">// built with obsession, not templates</span>
+  <span style="color:var(--muted);">ECS · VIT Vellore</span>
+</footer>
+
+<script>
+// CURSOR
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+(function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
+document.addEventListener('mousedown',()=>cursor.classList.add('click'));
+document.addEventListener('mouseup',()=>cursor.classList.remove('click'));
+function addHover(el){el.addEventListener('mouseenter',()=>{cursor.classList.add('hover');ring.classList.add('hover');});el.addEventListener('mouseleave',()=>{cursor.classList.remove('hover');ring.classList.remove('hover');});}
+document.querySelectorAll('a,button,.proj-card,.cert-card,.edu-card,.c-link,.btn-mag').forEach(addHover);
+
+// CURSOR TRAIL
+const trails=[];
+for(let i=0;i<8;i++){const t=document.createElement('div');t.className='trail';t.style.cssText='width:6px;height:6px;';document.body.appendChild(t);trails.push({el:t,x:0,y:0});}
+const tpos=[];
+document.addEventListener('mousemove',e=>{tpos.unshift({x:e.clientX,y:e.clientY});if(tpos.length>40)tpos.pop();});
+(function animTrails(){trails.forEach((t,i)=>{const p=tpos[i*5]||tpos[tpos.length-1];if(!p)return;t.x+=(p.x-t.x)*.3;t.y+=(p.y-t.y)*.3;t.el.style.left=t.x+'px';t.el.style.top=t.y+'px';t.el.style.opacity=(1-i/trails.length)*.28;const s=(1-i/trails.length)*6;t.el.style.width=s+'px';t.el.style.height=s+'px';});requestAnimationFrame(animTrails);})();
+
+// PARTICLE CANVAS
+const canvas=document.getElementById('canvas-bg'),ctx=canvas.getContext('2d');
+let W,H,pts=[];
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',()=>{resize();initPts();});
+function Pt(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-.5)*.4;this.vy=(Math.random()-.5)*.4;this.r=Math.random()*1.5+.5;this.a=Math.random()*.5+.2;}
+function initPts(){pts=[];const n=Math.floor(W*H/8000);for(let i=0;i<n;i++)pts.push(new Pt());}
+initPts();
+(function draw(){
+  ctx.clearRect(0,0,W,H);
+  pts.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;
+    if(p.y<0||p.y>H)p.vy*=-1;
+    const dx=mx-p.x,dy=my-p.y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<120){p.x-=dx*.025;p.y-=dy*.025;}
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,212,255,'+p.a+')';ctx.fill();
+  });
+  for(let i=0;i<pts.length;i++){
+    for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<130){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle='rgba(0,212,255,'+(.12*(1-d/130))+')';ctx.lineWidth=.5;ctx.stroke();}
+    }
+  }
+  requestAnimationFrame(draw);
+})();
+
+// TYPED
+const phrases=['data pipelines.','SQL queries.','business insights.','Excel dashboards.','analytical solutions.'];
+let pi=0,ci=0,del=false;
+const tel=document.getElementById('typed');
+function type(){
+  const cur=phrases[pi];
+  if(!del){tel.textContent=cur.slice(0,ci+1);ci++;if(ci===cur.length){del=true;setTimeout(type,1800);return;}}
+  else{tel.textContent=cur.slice(0,ci-1);ci--;if(ci===0){del=false;pi=(pi+1)%phrases.length;setTimeout(type,300);return;}}
+  setTimeout(type,del?50:80);
+}
+setTimeout(type,1000);
+
+// COUNT-UP
+function countUp(el){
+  const tgt=parseFloat(el.dataset.count),dec=parseInt(el.dataset.dec),steps=1800/16;
+  let cur=0;const inc=tgt/steps;
+  const tm=setInterval(()=>{cur+=inc;if(cur>=tgt){cur=tgt;clearInterval(tm);}el.textContent=cur.toFixed(dec);},16);
+}
+setTimeout(()=>document.querySelectorAll('[data-count]').forEach(countUp),800);
+
+// SCROLL REVEAL
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);}});
+},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(i%3)*.1+'s';io.observe(el);});
+
+// PROJECT CARD GLOW
+document.querySelectorAll('.proj-card').forEach(c=>{
+  c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');c.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');});
+});
+
+// MAGNETIC BUTTONS
+document.querySelectorAll('.btn-mag').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{const r=btn.getBoundingClientRect();btn.style.transform='translate('+(e.clientX-r.left-r.width/2)*.25+'px,'+(e.clientY-r.top-r.height/2)*.35+'px)';});
+  btn.addEventListener('mouseleave',()=>{btn.style.transform='';});
+  btn.addEventListener('click',e=>{
+    const rp=document.createElement('span');rp.className='btn-ripple';
+    const r=btn.getBoundingClientRect(),s=Math.max(r.width,r.height);
+    rp.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(e.clientX-r.left-s/2)+'px;top:'+(e.clientY-r.top-s/2)+'px';
+    btn.appendChild(rp);setTimeout(()=>rp.remove(),600);
+  });
+});
+
+// CERT MODAL
+const certData={
+  deloitte:{title:'Deloitte Australia – Data Analytics Job Simulation',meta:'Forage · 2026',link:'https://www.linkedin.com/in/pranam-s-shah-245a75322/details/certifications/'},
+  sql:{title:'Introduction to SQL',meta:'Scrimba · 2025',link:'https://www.linkedin.com/in/pranam-s-shah-245a75322/details/certifications/'},
+  excel:{title:'Microsoft Excel Certification',meta:'Microsoft',link:'https://www.linkedin.com/in/pranam-s-shah-245a75322/details/certifications/'}
+};
+function openCert(id){
+  const d=certData[id];
+  document.getElementById('modal-title').textContent=d.title;
+  document.getElementById('modal-meta').textContent=d.meta;
+  document.getElementById('modal-link').href=d.link;
+  const m=document.getElementById('cert-modal');
+  m.style.display='flex';
+  document.querySelectorAll('#cert-modal button,#cert-modal a').forEach(addHover);
+}
+function closeCert(){document.getElementById('cert-modal').style.display='none';}
+document.getElementById('cert-modal').addEventListener('click',function(e){if(e.target===this)closeCert();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCert();});
+</script>
+</body>
+</html>
