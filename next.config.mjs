@@ -1,5 +1,4 @@
-
-
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["@prisma/client", "@react-pdf/renderer"],
@@ -8,6 +7,10 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "**" },
     ],
+  },
+  // Required for Prisma on Vercel
+  outputFileTracingIncludes: {
+    "/**": ["./prisma/**"],
   },
 };
 
