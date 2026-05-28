@@ -1,109 +1,146 @@
 "use client";
-import { useState, useEffect } from "react";
-import { MessageSquare, CheckCircle, XCircle, ArrowRight } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { useState, useEffect, useCallback } from "react";
+import { formatDate, formatINR } from "@/lib/utils";
+import Modal from "@/components/ui/Modal";
+import { QuoteBadge } from "@/components/ui/Badge";
 
+interface Client { _id: string; name: string; company?: string; }
 interface Quote {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  company?: string;
-  mode: string;
-  movement: string;
-  origin: string;
-  destination: string;
-  cargoType: string;
-  weight?: number;
-  cbm?: number;
-  packages?: number;
-  notes?: string;
-  status: string;
-  quotedAmt?: number;
-  createdAt: string;
+  _id: string; quoteNo: string; status: string; origin: string; destination: string;
+  cargoType: string; incoterms?: string; weight?: number; cbm?: number; packages?: number;
+  commodity?: string; additionalServices?: string[]; remarks?: string;
+  quotedAmount?: number; validUntil?: string; adminNotes?: string;
+  client: Client; createdAt: string;
 }
 
 export default function QuotesPage() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("PENDING");
+  const [selected, setSelected] = useState<Quote | null>(null);
+  const [replyForm, setReplyForm] = useState({ quotedAmount: "", validUntil: "", adminNotes: "", status: "QUOTED" });
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/quotes").then((r) => r.json()).then(setQuotes).finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    const res = await fetch("/api/quotes");
+    const d = await res.json();
+    setQuotes(Array.isArray(d) ? d : []);
   }, []);
 
-  const filtered = filter === "ALL" ? quotes : quotes.filter((q) => q.status === filter);
+  useEffect(() => { load(); }, [load]);
+
+  async function replyQuote() {
+    if (!selected) return;
+    setSaving(true);
+    await fetch("/api/quotes", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: selected._id, ...replyForm, quotedAmount: replyForm.quotedAmount ? Number(replyForm.quotedAmount) : undefined }),
+    });
+    setSaving(false); setSelected(null); load();
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-heading font-bold text-primary-deep">Quote Requests</h1>
-        <p className="text-text-secondary mt-1">{quotes.length} total quote requests</p>
+        <p className="section-heading">Quote Management</p>
+        <h1 className="page-heading">Quotes</h1>
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {["ALL", "PENDING", "QUOTED", "ACCEPTED", "REJECTED"].map((s) => (
-          <button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              filter === s ? "bg-accent-teal text-white" : "bg-white text-text-secondary hover:bg-neutral-light"
-            }`}
-          >
-            {s} {s === "ALL" ? `(${quotes.length})` : `(${quotes.filter((q) => q.status === s).length})`}
-          </button>
-        ))}
+      <div className="card-luxury overflow-hidden">
+        <table className="table-luxury">
+          <thead>
+            <tr>
+              <th>Quote No</th>
+              <th>Client</th>
+              <th>Route</th>
+              <th>Cargo</th>
+              <th>Status</th>
+              <th>Quoted Amt</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quotes.map(q => (
+              <tr key={q._id}>
+                <td className="font-medium text-sm text-ink">{q.quoteNo}</td>
+                <td>
+                  <div className="text-sm">{q.client?.name}</div>
+                  <div className="text-xs text-ink-muted">{q.client?.company}</div>
+                </td>
+                <td className="text-xs text-ink-secondary">{q.origin} → {q.destination}</td>
+                <td className="text-xs text-ink-secondary">{q.cargoType}</td>
+                <td><QuoteBadge status={q.status} /></td>
+                <td className="text-sm">{q.quotedAmount ? formatINR(q.quotedAmount) : "—"}</td>
+                <td className="text-xs text-ink-muted">{formatDate(q.createdAt)}</td>
+                <td>
+                  <button onClick={() => { setSelected(q); setReplyForm({ quotedAmount: String(q.quotedAmount || ""), validUntil: q.validUntil ? q.validUntil.split("T")[0] : "", adminNotes: q.adminNotes || "", status: q.status === "PENDING" ? "QUOTED" : q.status }); }} className="text-xs text-gold hover:text-gold-light transition-colors">
+                    {q.status === "PENDING" ? "Reply" : "Edit"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {quotes.length === 0 && <tr><td colSpan={8} className="text-center text-ink-muted py-10">No quotes yet.</td></tr>}
+          </tbody>
+        </table>
       </div>
 
-      {loading ? (
-        <div className="text-center py-12 text-text-secondary">Loading...</div>
-      ) : (
-        <div className="space-y-4">
-          {filtered.map((q) => (
-            <div key={q.id} className="bg-white rounded-2xl shadow-card p-5">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 flex-wrap mb-2">
-                    <p className="font-heading font-bold text-primary-deep">{q.name}</p>
-                    {q.company && <span className="text-text-secondary text-sm">({q.company})</span>}
-                    <span className={`badge text-xs ${
-                      q.status === "PENDING" ? "bg-yellow-100 text-yellow-800" :
-                      q.status === "ACCEPTED" ? "bg-green-100 text-green-800" :
-                      q.status === "REJECTED" ? "bg-red-100 text-red-800" : "bg-blue-100 text-blue-800"
-                    }`}>{q.status}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-4 text-sm text-text-secondary">
-                    <span>{q.origin} → {q.destination}</span>
-                    <span className={`font-medium ${q.mode === "SEA" ? "text-blue-600" : "text-purple-600"}`}>{q.mode}</span>
-                    <span>{q.movement}</span>
-                    {q.weight && <span>{q.weight} KG</span>}
-                    {q.cbm && <span>{q.cbm} CBM</span>}
-                    {q.packages && <span>{q.packages} pkgs</span>}
-                  </div>
-                  {q.notes && <p className="text-text-secondary text-sm mt-2 italic">{q.notes}</p>}
+      {/* Reply Modal */}
+      <Modal open={!!selected} onClose={() => setSelected(null)} title={`Quote ${selected?.quoteNo}`} size="lg">
+        {selected && (
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              {[
+                ["Client", `${selected.client?.name}${selected.client?.company ? ` (${selected.client.company})` : ""}`],
+                ["Route", `${selected.origin} → ${selected.destination}`],
+                ["Cargo Type", selected.cargoType],
+                ["Incoterms", selected.incoterms],
+                ["Weight", selected.weight ? `${selected.weight} kg` : "—"],
+                ["CBM", selected.cbm ? `${selected.cbm} CBM` : "—"],
+                ["Packages", selected.packages?.toString() || "—"],
+                ["Commodity", selected.commodity || "—"],
+              ].map(([l, v]) => (
+                <div key={l}>
+                  <div className="text-xs text-ink-muted">{l}</div>
+                  <div className="text-ink">{v || "—"}</div>
                 </div>
-                <div className="text-right flex flex-col items-end gap-2">
-                  <p className="text-xs text-text-secondary">{formatDate(q.createdAt)}</p>
-                  <div className="flex gap-2">
-                    <a href={`mailto:${q.email}`} className="btn-secondary text-xs py-1.5 px-3">Reply</a>
-                    {q.status === "PENDING" && (
-                      <button className="bg-green-500 text-white text-xs py-1.5 px-3 rounded-lg hover:bg-green-400 transition-colors">
-                        Accept
-                      </button>
-                    )}
-                  </div>
-                </div>
+              ))}
+            </div>
+            {selected.remarks && (
+              <div className="bg-surface-hover rounded p-3 text-sm text-ink-secondary">
+                <span className="text-xs text-ink-muted block mb-1">Client Remarks:</span>
+                {selected.remarks}
+              </div>
+            )}
+            <div className="gold-line" />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="label-luxury">Quoted Amount (₹)</label>
+                <input type="number" value={replyForm.quotedAmount} onChange={e => setReplyForm(f => ({ ...f, quotedAmount: e.target.value }))} className="input-luxury" placeholder="Enter amount" />
+              </div>
+              <div>
+                <label className="label-luxury">Valid Until</label>
+                <input type="date" value={replyForm.validUntil} onChange={e => setReplyForm(f => ({ ...f, validUntil: e.target.value }))} className="input-luxury" />
+              </div>
+              <div className="col-span-2">
+                <label className="label-luxury">Status</label>
+                <select value={replyForm.status} onChange={e => setReplyForm(f => ({ ...f, status: e.target.value }))} className="input-luxury">
+                  {["PENDING","QUOTED","ACCEPTED","REJECTED","EXPIRED"].map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="label-luxury">Notes to Client</label>
+                <textarea value={replyForm.adminNotes} onChange={e => setReplyForm(f => ({ ...f, adminNotes: e.target.value }))} className="input-luxury" rows={3} placeholder="Terms, conditions, remarks..." />
               </div>
             </div>
-          ))}
-          {filtered.length === 0 && (
-            <div className="text-center py-12">
-              <MessageSquare className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-text-secondary">No {filter.toLowerCase()} quotes</p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button onClick={() => setSelected(null)} className="btn-ghost text-sm">Cancel</button>
+              <button onClick={replyQuote} disabled={saving} className="btn-gold text-sm disabled:opacity-50">
+                {saving ? "Saving..." : "Save Reply"}
+              </button>
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

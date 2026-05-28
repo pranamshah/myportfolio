@@ -1,16 +1,10 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import bcrypt from "bcryptjs";
-import { prisma } from "./prisma";
+import { connectDB } from "./mongoose";
+import User from "@/models/User";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -20,20 +14,15 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
-
+        await connectDB();
+        const user = await User.findOne({ email: credentials.email.toLowerCase(), isActive: true });
         if (!user) return null;
-
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) return null;
-
+        const valid = await user.comparePassword(credentials.password);
+        if (!valid) return null;
         return {
-          id: user.id,
-          name: user.name,
+          id: user._id.toString(),
           email: user.email,
+          name: user.name,
           role: user.role,
         };
       },
@@ -42,17 +31,19 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as unknown as { role: string }).role;
         token.id = user.id;
+        token.role = (user as unknown as { role: string }).role;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        (session.user as { role: string }).role = token.role as string;
-        (session.user as { id: string }).id = token.id as string;
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
       }
       return session;
     },
   },
+  pages: { signIn: "/login" },
+  secret: process.env.NEXTAUTH_SECRET,
 };

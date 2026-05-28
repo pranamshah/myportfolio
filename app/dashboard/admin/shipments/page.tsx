@@ -1,152 +1,199 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Plus, Search, Filter, Package } from "lucide-react";
-import { STATUS_LABELS, STATUS_COLORS, formatDate } from "@/lib/utils";
+import { Plus, Search, Filter } from "lucide-react";
+import Modal from "@/components/ui/Modal";
+import { StatusBadge } from "@/components/ui/Badge";
+import { formatDate } from "@/lib/utils";
 
-interface Shipment {
-  id: string;
-  jobNo: string;
-  mode: string;
-  movement: string;
-  status: string;
-  portLoading?: string;
-  portDischarge?: string;
-  vessel?: string;
-  eta?: string;
-  client: { name: string };
-  blNo?: string;
-  awbNo?: string;
-}
+const STATUSES = ["BOOKING_CONFIRMED","CARGO_PICKED_UP","AT_CFS","ON_VESSEL","IN_TRANSIT","ARRIVED_AT_PORT","UNDER_CUSTOMS_EXAM","CUSTOMS_CLEARED","DELIVERED","COMPLETED"];
+const INCOTERMS = ["EXW","FCA","CPT","CIP","DAP","DPU","DDP","FAS","FOB","CFR","CIF"];
+
+interface Client { _id: string; name: string; company?: string; }
+interface Shipment { _id: string; shipmentId: string; description: string; status: string; origin: string; destination: string; client: Client; etd?: string; eta?: string; updatedAt: string; }
+
+const emptyForm = { client: "", description: "", origin: "", destination: "", portOfLoading: "", portOfDischarge: "", vessel: "", voyageNo: "", blNo: "", containerNo: "", sealNo: "", packages: "", grossWeight: "", cbm: "", commodity: "", incoterms: "FOB", status: "BOOKING_CONFIRMED", etd: "", eta: "", notes: "" };
 
 export default function ShipmentsPage() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (statusFilter) params.set("status", statusFilter);
-    fetch(`/api/shipments?${params}`)
-      .then((r) => r.json())
-      .then(setShipments)
-      .finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    const url = statusFilter ? `/api/shipments?status=${statusFilter}` : "/api/shipments";
+    const res = await fetch(url);
+    const data = await res.json();
+    setShipments(Array.isArray(data) ? data : []);
   }, [statusFilter]);
 
-  const filtered = shipments.filter((s) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      s.jobNo.toLowerCase().includes(q) ||
-      s.client.name.toLowerCase().includes(q) ||
-      (s.blNo?.toLowerCase().includes(q)) ||
-      (s.vessel?.toLowerCase().includes(q))
-    );
-  });
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    fetch("/api/clients").then(r => r.json()).then(d => setClients(Array.isArray(d) ? d : []));
+  }, []);
+
+  const filtered = shipments.filter(s =>
+    s.shipmentId.toLowerCase().includes(search.toLowerCase()) ||
+    s.description.toLowerCase().includes(search.toLowerCase()) ||
+    s.client?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    s.origin.toLowerCase().includes(search.toLowerCase()) ||
+    s.destination.toLowerCase().includes(search.toLowerCase())
+  );
+
+  async function save() {
+    setSaving(true);
+    const payload = { ...form, packages: form.packages ? Number(form.packages) : undefined, grossWeight: form.grossWeight ? Number(form.grossWeight) : undefined, cbm: form.cbm ? Number(form.cbm) : undefined };
+    const url = editId ? `/api/shipments/${editId}` : "/api/shipments";
+    const method = editId ? "PUT" : "POST";
+    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const data = await res.json();
+    setSaving(false);
+    if (data.success || data.shipmentId) { setShowModal(false); setForm(emptyForm); setEditId(null); load(); }
+    else alert(data.error || "Error saving");
+  }
+
+  function openEdit(s: Shipment) {
+    setEditId(s._id);
+    setForm({ ...emptyForm, client: s.client?._id || "", description: s.description, origin: s.origin, destination: s.destination, status: s.status, etd: s.etd ? s.etd.split("T")[0] : "", eta: s.eta ? s.eta.split("T")[0] : "" });
+    setShowModal(true);
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6 lg:p-8 space-y-6">
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-heading font-bold text-primary-deep">Shipments</h1>
-          <p className="text-text-secondary mt-1">{shipments.length} total shipments</p>
+          <p className="section-heading">Shipment Management</p>
+          <h1 className="page-heading">Shipments</h1>
         </div>
-        <Link href="/dashboard/admin/shipments/new" className="btn-primary flex items-center gap-2 text-sm">
-          <Plus className="w-4 h-4" /> New Shipment
-        </Link>
+        <button onClick={() => { setEditId(null); setForm(emptyForm); setShowModal(true); }} className="btn-gold flex items-center gap-2 text-sm">
+          <Plus size={15} /> New Shipment
+        </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl shadow-card p-4 flex flex-wrap gap-4">
-        <div className="flex items-center gap-2 flex-1 min-w-48">
-          <Search className="w-4 h-4 text-text-secondary" />
-          <input
-            className="flex-1 outline-none text-sm text-primary-deep placeholder-text-secondary"
-            placeholder="Search job no, client, BL no..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <div className="flex gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search shipments..." className="input-luxury pl-9" />
         </div>
-        <select
-          className="select text-sm w-auto"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input-luxury w-auto min-w-[160px]">
           <option value="">All Statuses</option>
-          {Object.entries(STATUS_LABELS).map(([k, v]) => (
-            <option key={k} value={k}>{v}</option>
-          ))}
-        </select>
-        <select className="select text-sm w-auto">
-          <option value="">All Modes</option>
-          <option value="SEA">Sea</option>
-          <option value="AIR">Air</option>
+          {STATUSES.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
         </select>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-light border-b border-gray-100">
-              <tr>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Job No</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Client</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Route</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Mode</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">BL/AWB</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Status</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">ETA</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Actions</th>
+      <div className="card-luxury overflow-hidden">
+        <table className="table-luxury">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Client</th>
+              <th>Description</th>
+              <th>Route</th>
+              <th>Status</th>
+              <th>ETD / ETA</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(s => (
+              <tr key={s._id}>
+                <td>
+                  <Link href={`/dashboard/admin/shipments/${s._id}`} className="text-gold hover:text-gold-light transition-colors font-medium text-sm">
+                    {s.shipmentId}
+                  </Link>
+                </td>
+                <td>
+                  <div className="text-sm text-ink">{s.client?.name}</div>
+                  <div className="text-xs text-ink-muted">{s.client?.company}</div>
+                </td>
+                <td className="max-w-[160px]"><div className="truncate text-sm">{s.description}</div></td>
+                <td className="text-xs text-ink-secondary">{s.origin}<br />→ {s.destination}</td>
+                <td><StatusBadge status={s.status} /></td>
+                <td className="text-xs text-ink-muted">
+                  {s.etd ? <div>ETD: {formatDate(s.etd)}</div> : null}
+                  {s.eta ? <div>ETA: {formatDate(s.eta)}</div> : null}
+                </td>
+                <td>
+                  <div className="flex gap-2">
+                    <Link href={`/dashboard/admin/shipments/${s._id}`} className="text-xs text-gold hover:text-gold-light transition-colors">View</Link>
+                    <button onClick={() => openEdit(s)} className="text-xs text-ink-secondary hover:text-ink transition-colors">Edit</button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {loading ? (
-                <tr><td colSpan={8} className="px-5 py-8 text-center text-text-secondary">Loading...</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-5 py-12 text-center">
-                    <Package className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                    <p className="text-text-secondary">No shipments found</p>
-                    <Link href="/dashboard/admin/shipments/new" className="text-accent-teal hover:underline text-sm mt-1 inline-block">
-                      Create your first shipment
-                    </Link>
-                  </td>
-                </tr>
-              ) : filtered.map((s) => (
-                <tr key={s.id} className="hover:bg-neutral-light/50 transition-colors">
-                  <td className="px-5 py-3">
-                    <Link href={`/dashboard/admin/shipments/${s.id}`} className="font-mono text-accent-teal hover:underline font-semibold">
-                      {s.jobNo}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 font-medium text-primary-deep">{s.client.name}</td>
-                  <td className="px-5 py-3 text-text-secondary">{s.portLoading || "—"} → {s.portDischarge || "—"}</td>
-                  <td className="px-5 py-3">
-                    <span className={`badge ${s.mode === "SEA" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"}`}>
-                      {s.mode}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 font-mono text-xs text-text-secondary">{s.blNo || s.awbNo || "—"}</td>
-                  <td className="px-5 py-3">
-                    <span className={`badge ${STATUS_COLORS[s.status]}`}>
-                      {STATUS_LABELS[s.status]}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-text-secondary">{formatDate(s.eta)}</td>
-                  <td className="px-5 py-3">
-                    <div className="flex gap-2">
-                      <Link href={`/dashboard/admin/shipments/${s.id}`} className="text-accent-teal hover:underline text-xs font-medium">View</Link>
-                      <Link href={`/dashboard/admin/shipments/${s.id}/edit`} className="text-text-secondary hover:text-primary-deep text-xs">Edit</Link>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+            {filtered.length === 0 && (
+              <tr><td colSpan={7} className="text-center text-ink-muted py-10">No shipments found.</td></tr>
+            )}
+          </tbody>
+        </table>
       </div>
+
+      {/* Modal */}
+      <Modal open={showModal} onClose={() => { setShowModal(false); setEditId(null); }} title={editId ? "Edit Shipment" : "New Shipment"} size="xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label className="label-luxury">Client *</label>
+            <select value={form.client} onChange={e => setForm(f => ({ ...f, client: e.target.value }))} className="input-luxury">
+              <option value="">Select client...</option>
+              {clients.map(c => <option key={c._id} value={c._id}>{c.name} {c.company ? `(${c.company})` : ""}</option>)}
+            </select>
+          </div>
+          <div className="md:col-span-2">
+            <label className="label-luxury">Description *</label>
+            <input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="input-luxury" placeholder="Shipment description" />
+          </div>
+          {[
+            { key: "origin", label: "Origin" }, { key: "destination", label: "Destination" },
+            { key: "portOfLoading", label: "Port of Loading" }, { key: "portOfDischarge", label: "Port of Discharge" },
+            { key: "vessel", label: "Vessel Name" }, { key: "voyageNo", label: "Voyage No." },
+            { key: "blNo", label: "B/L No." }, { key: "containerNo", label: "Container No." },
+            { key: "sealNo", label: "Seal No." }, { key: "commodity", label: "Commodity" },
+            { key: "packages", label: "No. of Packages" }, { key: "grossWeight", label: "Gross Weight (kg)" },
+            { key: "cbm", label: "Volume (CBM)" },
+          ].map(({ key, label }) => (
+            <div key={key}>
+              <label className="label-luxury">{label}</label>
+              <input value={(form as Record<string, string>)[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} className="input-luxury" />
+            </div>
+          ))}
+          <div>
+            <label className="label-luxury">Incoterms</label>
+            <select value={form.incoterms} onChange={e => setForm(f => ({ ...f, incoterms: e.target.value }))} className="input-luxury">
+              {INCOTERMS.map(i => <option key={i} value={i}>{i}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label-luxury">Status</label>
+            <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className="input-luxury">
+              {STATUSES.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label-luxury">ETD</label>
+            <input type="date" value={form.etd} onChange={e => setForm(f => ({ ...f, etd: e.target.value }))} className="input-luxury" />
+          </div>
+          <div>
+            <label className="label-luxury">ETA</label>
+            <input type="date" value={form.eta} onChange={e => setForm(f => ({ ...f, eta: e.target.value }))} className="input-luxury" />
+          </div>
+          <div className="md:col-span-2">
+            <label className="label-luxury">Notes</label>
+            <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="input-luxury" rows={2} />
+          </div>
+        </div>
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-surface-hover">
+          <button onClick={() => { setShowModal(false); setEditId(null); }} className="btn-ghost text-sm">Cancel</button>
+          <button onClick={save} disabled={saving || !form.client || !form.description || !form.origin || !form.destination} className="btn-gold text-sm disabled:opacity-50">
+            {saving ? "Saving..." : editId ? "Update" : "Create Shipment"}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

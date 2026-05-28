@@ -1,55 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongoose";
+import ShipDoc from "@/models/Document";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+  await connectDB();
   const { searchParams } = new URL(req.url);
-  const shipmentId = searchParams.get("shipmentId");
-  if (!shipmentId) return NextResponse.json({ error: "shipmentId required" }, { status: 400 });
-
-  const docs = await prisma.document.findMany({
-    where: { shipmentId },
-    orderBy: { createdAt: "desc" },
-  });
-
+  const shipmentId = searchParams.get("shipment");
+  const filter: Record<string, unknown> = {};
+  if (shipmentId) filter.shipment = shipmentId;
+  if (session.user.role === "CLIENT") filter.isVisibleToClient = true;
+  const docs = await ShipDoc.find(filter)
+    .populate("uploadedBy", "name")
+    .populate("shipment", "shipmentId description")
+    .sort({ createdAt: -1 });
   return NextResponse.json(docs);
 }
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session || session.user.role !== "ADMIN") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  await connectDB();
 
-  const userId = (session.user as { id: string }).id;
+  const formData = await req.formData();
+  const file = formData.get("file") as File;
+  const shipment = formData.get("shipment") as string;
+  const category = (formData.get("category") as string) || "OTHER";
+  const description = (formData.get("description") as string) || "";
+  const isVisibleToClient = formData.get("isVisibleToClient") === "true";
+  const name = (formData.get("name") as string) || file.name;
 
-  try {
-    const formData = await req.formData();
-    const shipmentId = formData.get("shipmentId") as string;
-    const type = formData.get("type") as string;
-    const label = formData.get("label") as string;
-    const file = formData.get("file") as File;
+  if (!file || !shipment) return NextResponse.json({ error: "File and shipment required" }, { status: 400 });
 
-    if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+  const ext = file.name.split(".").pop();
+  const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const dir = path.join(process.cwd(), "public", "uploads", shipment);
+  await mkdir(dir, { recursive: true });
+  const filePath = path.join(dir, filename);
+  await writeFile(filePath, buffer);
 
-    // Store file path (in production, use cloud storage)
-    const filePath = `/uploads/${Date.now()}-${file.name}`;
-
-    const doc = await prisma.document.create({
-      data: {
-        shipmentId,
-        type: type as "BL",
-        label,
-        filePath,
-        uploadedBy: userId,
-      },
-    });
-
-    return NextResponse.json(doc, { status: 201 });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
-  }
+  const doc = new ShipDoc({
+    shipment,
+    uploadedBy: session.user.id,
+    name,
+    originalName: file.name,
+    fileType: file.type,
+    fileSize: file.size,
+    filePath: `/uploads/${shipment}/${filename}`,
+    category,
+    description,
+    isVisibleToClient,
+  });
+  await doc.save();
+  return NextResponse.json({ success: true, id: doc._id, filePath: doc.filePath });
 }

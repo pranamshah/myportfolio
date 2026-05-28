@@ -1,22 +1,25 @@
 {
-  "name": "navkar-exim",
-  "version": "0.1.0",
+  "name": "navkar-impex",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate",
-    "seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
+    "seed": "node scripts/seed.js"
   },
   "dependencies": {
-    "@next-auth/prisma-adapter": "^1.0.7",
-    "@prisma/client": "^5.22.0",
+    "@hookform/resolvers": "^3.9.1",
     "@react-pdf/renderer": "^3.4.4",
     "bcryptjs": "^2.4.3",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "dotenv": "^17.4.2",
     "framer-motion": "^11.11.0",
     "lucide-react": "^0.454.0",
+    "mongoose": "^8.8.0",
+    "multer": "^1.4.5-lts.1",
     "next": "14.2.16",
     "next-auth": "^4.24.10",
     "nodemailer": "^6.9.15",
@@ -24,22 +27,19 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.2",
     "recharts": "^2.13.3",
-    "zod": "^3.23.8",
-    "zustand": "^5.0.1",
-    "clsx": "^2.1.1",
-    "@hookform/resolvers": "^3.9.1"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/nodemailer": "^6.4.16",
+    "@types/multer": "^1.4.12",
     "@types/node": "^20.17.6",
+    "@types/nodemailer": "^6.4.16",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.16",
     "postcss": "^8.4.47",
-    "prisma": "^5.22.0",
     "tailwindcss": "^3.4.14",
     "typescript": "^5.6.3"
   }

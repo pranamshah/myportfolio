@@ -1,102 +1,99 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { connectDB } from "@/lib/mongoose";
+import Shipment from "@/models/Shipment";
+import Invoice from "@/models/Invoice";
+import Quote from "@/models/Quote";
+import { formatINR, formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { Package, FolderOpen, MessageSquare, Receipt } from "lucide-react";
-import { STATUS_LABELS, STATUS_COLORS, formatDate } from "@/lib/utils";
+import { Ship, FileText, MessageSquare, TrendingUp } from "lucide-react";
+import { StatusBadge } from "@/components/ui/Badge";
 
-export default async function ClientDashboardPage() {
+export default async function ClientDashboard() {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id: string })?.id;
-  const userName = session?.user?.name?.split(" ")[0] || "there";
+  await connectDB();
+  const clientId = session!.user.id;
 
-  const [activeShipments, completedShipments, pendingQuotes, documents, recentShipments] = await Promise.all([
-    prisma.shipment.count({ where: { clientId: userId, status: { notIn: ["DELIVERED", "COMPLETED"] } } }),
-    prisma.shipment.count({ where: { clientId: userId, status: { in: ["DELIVERED", "COMPLETED"] } } }),
-    prisma.quote.count({ where: { clientId: userId, status: "PENDING" } }),
-    prisma.document.count({ where: { shipment: { clientId: userId } } }),
-    prisma.shipment.findMany({
-      where: { clientId: userId },
-      take: 5,
-      orderBy: { createdAt: "desc" },
-    }),
+  const [activeShipments, pendingQuotes, invoices, recentShipmentsDocs] = await Promise.all([
+    Shipment.countDocuments({ client: clientId, status: { $nin: ["DELIVERED", "COMPLETED"] } }),
+    Quote.countDocuments({ client: clientId, status: "PENDING" }),
+    Invoice.find({ client: clientId }).select("totalAmount amountPaid status"),
+    Shipment.find({ client: clientId }).sort({ updatedAt: -1 }).limit(5).select("shipmentId description status origin destination eta updatedAt").lean(),
   ]);
+  type RecentShip = { _id: string; shipmentId: string; description: string; status: string; origin: string; destination: string; eta?: Date; updatedAt: Date };
+  const recentShipments = recentShipmentsDocs as unknown as RecentShip[];
 
-  const kpis = [
-    { label: "Active Shipments", value: activeShipments, icon: Package, color: "bg-blue-500", link: "/dashboard/client/shipments" },
-    { label: "Completed", value: completedShipments, icon: Package, color: "bg-green-500", link: "/dashboard/client/shipments" },
-    { label: "Pending Quotes", value: pendingQuotes, icon: MessageSquare, color: "bg-yellow-500", link: "/quote" },
-    { label: "Documents", value: documents, icon: FolderOpen, color: "bg-purple-500", link: "/dashboard/client/documents" },
+  const totalBilled = invoices.reduce((s, i) => s + i.totalAmount, 0);
+  const totalPaid = invoices.reduce((s, i) => s + i.amountPaid, 0);
+  const outstanding = totalBilled - totalPaid;
+
+  const stats = [
+    { label: "Active Shipments", value: activeShipments, icon: Ship, color: "text-blue-400", bg: "bg-blue-900/20" },
+    { label: "Pending Quotes", value: pendingQuotes, icon: MessageSquare, color: "text-yellow-400", bg: "bg-yellow-900/20" },
+    { label: "Total Invoiced", value: formatINR(totalBilled), icon: FileText, color: "text-purple-400", bg: "bg-purple-900/20" },
+    { label: "Outstanding", value: formatINR(outstanding), icon: TrendingUp, color: "text-gold", bg: "bg-gold/10" },
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="bg-gradient-to-r from-primary-deep to-primary-ocean rounded-2xl p-6 text-white">
-        <h1 className="text-2xl font-heading font-bold">Welcome back, {userName}! 👋</h1>
-        <p className="text-gray-300 mt-1">Track your shipments, download documents, and manage your invoices.</p>
-        <div className="flex gap-3 mt-4">
-          <Link href="/track" className="bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-lg text-sm font-medium">
-            Track Shipment
-          </Link>
-          <Link href="/quote" className="bg-accent-teal hover:bg-opacity-90 transition-colors px-4 py-2 rounded-lg text-sm font-medium">
-            Get Quote
-          </Link>
-        </div>
+    <div className="p-6 lg:p-8 space-y-8">
+      <div>
+        <p className="section-heading">Client Portal</p>
+        <h1 className="page-heading">Welcome, {session?.user?.name?.split(" ")[0]}</h1>
+        <p className="text-ink-secondary text-sm mt-1">Track your shipments, view invoices and download documents.</p>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis.map((kpi) => (
-          <Link key={kpi.label} href={kpi.link} className="bg-white rounded-2xl shadow-card p-5 hover:shadow-lg transition-shadow">
-            <div className={`w-10 h-10 ${kpi.color} rounded-xl flex items-center justify-center mb-3`}>
-              <kpi.icon className="w-5 h-5 text-white" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {stats.map(({ label, value, icon: Icon, color, bg }) => (
+          <div key={label} className="card-luxury p-4">
+            <div className={`w-8 h-8 rounded ${bg} flex items-center justify-center mb-3`}>
+              <Icon size={16} className={color} />
             </div>
-            <p className="text-2xl font-heading font-bold text-primary-deep">{kpi.value}</p>
-            <p className="text-text-secondary text-sm mt-1">{kpi.label}</p>
-          </Link>
+            <div className="text-xl font-semibold text-ink">{value}</div>
+            <div className="text-xs text-ink-muted mt-0.5">{label}</div>
+          </div>
         ))}
       </div>
 
-      {/* Recent Shipments */}
-      <div className="bg-white rounded-2xl shadow-card overflow-hidden">
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-heading font-bold text-primary-deep">Recent Shipments</h2>
-          <Link href="/dashboard/client/shipments" className="text-accent-teal text-sm hover:underline">View all</Link>
+      {/* Quick actions */}
+      <div>
+        <p className="section-heading">Quick Actions</p>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/dashboard/client/quotes" className="btn-gold text-sm">Request a Quote</Link>
+          <Link href="/dashboard/client/shipments" className="btn-ghost text-sm">Track Shipments</Link>
+          <Link href="/dashboard/client/invoices" className="btn-ghost text-sm">View Invoices</Link>
+          <Link href="/dashboard/client/documents" className="btn-ghost text-sm">My Documents</Link>
         </div>
-        {recentShipments.length === 0 ? (
-          <div className="p-10 text-center">
-            <Package className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-text-secondary">No shipments yet. Contact us to get started.</p>
-            <Link href="/quote" className="btn-primary text-sm mt-4 inline-block">Get a Quote</Link>
-          </div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-light">
-              <tr>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Job No</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Route</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Status</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">ETA</th>
-              </tr>
+      </div>
+
+      {/* Recent shipments */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <p className="section-heading mb-0">Recent Shipments</p>
+          <Link href="/dashboard/client/shipments" className="text-xs text-gold hover:text-gold-light">View all →</Link>
+        </div>
+        <div className="card-luxury overflow-hidden">
+          <table className="table-luxury">
+            <thead>
+              <tr><th>Shipment ID</th><th>Description</th><th>Route</th><th>Status</th><th>ETA</th></tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody>
               {recentShipments.map((s) => (
-                <tr key={s.id} className="hover:bg-neutral-light/50">
-                  <td className="px-5 py-3">
-                    <Link href={`/dashboard/client/shipments/${s.id}`} className="font-mono text-accent-teal hover:underline font-semibold">
-                      {s.jobNo}
-                    </Link>
+                <tr key={s._id.toString()}>
+                  <td>
+                    <Link href={`/dashboard/client/shipments/${s._id}`} className="text-gold hover:text-gold-light font-medium text-sm">{s.shipmentId}</Link>
                   </td>
-                  <td className="px-5 py-3 text-text-secondary">{s.portLoading || "—"} → {s.portDischarge || "—"}</td>
-                  <td className="px-5 py-3">
-                    <span className={`badge ${STATUS_COLORS[s.status]}`}>{STATUS_LABELS[s.status]}</span>
-                  </td>
-                  <td className="px-5 py-3 text-text-secondary">{formatDate(s.eta)}</td>
+                  <td className="text-sm text-ink-secondary">{s.description}</td>
+                  <td className="text-xs text-ink-muted">{s.origin} → {s.destination}</td>
+                  <td><StatusBadge status={s.status} /></td>
+                  <td className="text-xs text-ink-muted">{s.eta ? formatDate(s.eta) : "—"}</td>
                 </tr>
               ))}
+              {recentShipments.length === 0 && (
+                <tr><td colSpan={5} className="text-center text-ink-muted py-8">No shipments yet.</td></tr>
+              )}
             </tbody>
           </table>
-        )}
+        </div>
       </div>
     </div>
   );

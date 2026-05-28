@@ -2,116 +2,105 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Ship, Loader2, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPass, setShowPass] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
-
-    const res = await signIn("credentials", {
-      email: form.email,
-      password: form.password,
-      redirect: false,
-    });
-
+    const res = await signIn("credentials", { email, password, redirect: false });
     setLoading(false);
-    if (res?.error) {
-      setError("Invalid email or password.");
-    } else {
-      const sessionRes = await fetch("/api/auth/session");
-      const session = await sessionRes.json();
-      const role = session?.user?.role;
-      router.push(role === "ADMIN" ? "/dashboard/admin" : "/dashboard/client");
-    }
+    if (res?.error) { setError("Invalid credentials. Please try again."); return; }
+    router.push("/dashboard");
   }
 
   return (
-    <div className="min-h-screen bg-primary-deep flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-accent-teal rounded-xl flex items-center justify-center">
-              <Ship className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-surface-deep flex items-center justify-center relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gold/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gold/3 rounded-full blur-[100px]" />
+        {/* Decorative grid */}
+        <div className="absolute inset-0 opacity-[0.015]"
+          style={{ backgroundImage: "linear-gradient(#C9A452 1px, transparent 1px), linear-gradient(90deg, #C9A452 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+      </div>
+
+      <div className="relative w-full max-w-md mx-4 animate-fade-up">
+        {/* Logo / Brand */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded border border-gold/40 flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-gold">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
             </div>
-            <span className="text-white font-heading font-bold text-xl">
-              Navkar <span className="text-accent-teal">Exim</span>
-            </span>
-          </Link>
+          </div>
+          <h1 className="font-display text-4xl font-light text-ink tracking-wide">Navkar Impex</h1>
+          <div className="gold-line max-w-[120px] mx-auto mt-3 mb-3" />
+          <p className="text-ink-secondary text-sm tracking-widest uppercase">Freight Forwarding</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h1 className="text-2xl font-heading font-bold text-primary-deep mb-1">Welcome back</h1>
-          <p className="text-text-secondary text-sm mb-6">Sign in to your account</p>
+        {/* Card */}
+        <div className="card-luxury p-8">
+          <h2 className="font-display text-xl font-light text-ink mb-1">Welcome back</h2>
+          <p className="text-ink-muted text-sm mb-7">Sign in to access your portal</p>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-600 text-sm mb-4">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="label">Email Address</label>
+              <label className="label-luxury">Email Address</label>
               <input
                 type="email"
-                className="input"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="input-luxury"
                 placeholder="you@company.com"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
+                autoFocus
               />
             </div>
             <div>
-              <label className="label">Password</label>
-              <div className="relative">
-                <input
-                  type={showPass ? "text" : "password"}
-                  className="input pr-10"
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary"
-                >
-                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+              <label className="label-luxury">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="input-luxury"
+                placeholder="••••••••"
+                required
+              />
             </div>
+
+            {error && (
+              <div className="bg-danger/10 border border-danger/30 rounded px-3 py-2 text-sm text-red-400">
+                {error}
+              </div>
+            )}
 
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2 mt-2"
+              className="btn-gold w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              Sign In
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-surface-deep/30 border-t-surface-deep rounded-full animate-spin" />
+                  Signing in...
+                </>
+              ) : "Sign In"}
             </button>
           </form>
-
-          <p className="text-center text-text-secondary text-sm mt-6">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-accent-teal hover:underline font-medium">
-              Register here
-            </Link>
-          </p>
         </div>
 
-        <p className="text-center text-gray-500 text-xs mt-6">
-          <Link href="/" className="hover:text-gray-300 transition-colors">← Back to website</Link>
+        <p className="text-center text-ink-muted text-xs mt-6">
+          © {new Date().getFullYear()} Navkar Impex. All rights reserved.
         </p>
       </div>
     </div>

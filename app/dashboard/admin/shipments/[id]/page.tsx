@@ -1,385 +1,293 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Package, CheckCircle, Circle, Edit, Save, Plus, Loader2 } from "lucide-react";
-import { STATUS_LABELS, STATUS_COLORS, formatDate, formatCurrency } from "@/lib/utils";
+import { ArrowLeft, Upload, FileText, CheckCircle, Clock } from "lucide-react";
+import { StatusBadge, InvoiceBadge } from "@/components/ui/Badge";
+import { formatDate, formatINR, STATUS_LABEL } from "@/lib/utils";
+import Modal from "@/components/ui/Modal";
 
-const ALL_STATUSES = [
-  "BOOKING_CONFIRMED", "CARGO_PICKED_UP", "AT_CFS", "ON_VESSEL",
-  "IN_TRANSIT", "ARRIVED_AT_PORT", "UNDER_CUSTOMS_EXAMINATION",
-  "CUSTOMS_CLEARED", "DELIVERED", "COMPLETED",
-];
+const STATUSES = ["BOOKING_CONFIRMED","CARGO_PICKED_UP","AT_CFS","ON_VESSEL","IN_TRANSIT","ARRIVED_AT_PORT","UNDER_CUSTOMS_EXAM","CUSTOMS_CLEARED","DELIVERED","COMPLETED"];
+const DOC_CATS = ["BL","INVOICE","PACKING_LIST","CUSTOMS","INSURANCE","CERTIFICATE","OTHER"];
 
 interface Shipment {
-  id: string;
-  jobNo: string;
-  mode: string;
-  movement: string;
-  status: string;
-  liner?: string;
-  vessel?: string;
-  voyage?: string;
-  blNo?: string;
-  awbNo?: string;
-  beNo?: string;
-  mblNo?: string;
-  hblNo?: string;
-  portLoading?: string;
-  portDischarge?: string;
-  finalDest?: string;
-  cargoDesc?: string;
-  hsCode?: string;
-  packages?: number;
-  grossWeight?: number;
-  cbm?: number;
-  chaName?: string;
-  examType?: string;
-  cfsName?: string;
-  eta?: string;
-  sailDate?: string;
-  arrivalDate?: string;
-  clearanceDate?: string;
-  deliveryDate?: string;
-  notes?: string;
-  client: { name: string; email: string; company?: string; phone?: string };
-  containers: { id: string; containerNo: string; sealNo?: string; size?: string; type?: string }[];
-  documents: { id: string; label: string; type: string; filePath: string; createdAt: string }[];
-  charges: { id: string; name: string; category: string; totalAmt: number; vendorName?: string }[];
-  invoices: { id: string; invoiceNo: string; type: string; total: number; status: string }[];
-  trackingUpdates: { id: string; status: string; note?: string; createdAt: string }[];
+  _id: string; shipmentId: string; description: string; status: string;
+  origin: string; destination: string; portOfLoading: string; portOfDischarge: string;
+  vessel?: string; voyageNo?: string; blNo?: string; containerNo?: string; sealNo?: string;
+  packages?: number; grossWeight?: number; cbm?: number; commodity?: string; incoterms?: string;
+  etd?: string; eta?: string; notes?: string;
+  client: { _id: string; name: string; company?: string; email: string; phone?: string; address?: string; gst?: string; };
+  timeline: { status: string; date: string; note?: string }[];
 }
 
-export default function ShipmentDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const router = useRouter();
-  const [shipment, setShipment] = useState<Shipment | null>(null);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [statusUpdate, setStatusUpdate] = useState("");
-  const [statusNote, setStatusNote] = useState("");
-  const [notifyClient, setNotifyClient] = useState(false);
-  const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [loading, setLoading] = useState(true);
+interface Doc { _id: string; name: string; originalName: string; filePath: string; category: string; fileSize: number; createdAt: string; isVisibleToClient: boolean; }
+interface Invoice { _id: string; invoiceNo: string; invoiceType: string; totalAmount: number; status: string; invoiceDate: string; }
 
-  useEffect(() => {
-    fetch(`/api/shipments/${id}`)
-      .then((r) => r.json())
-      .then((data) => { setShipment(data); setStatusUpdate(data.status); })
-      .finally(() => setLoading(false));
+export default function ShipmentDetail() {
+  const { id } = useParams();
+  const [shipment, setShipment] = useState<Shipment | null>(null);
+  const [docs, setDocs] = useState<Doc[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [uploadModal, setUploadModal] = useState(false);
+  const [statusModal, setStatusModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [newStatus, setNewStatus] = useState("");
+  const [statusNote, setStatusNote] = useState("");
+  const [uploadForm, setUploadForm] = useState({ category: "OTHER", description: "", isVisibleToClient: true, name: "" });
+  const [file, setFile] = useState<File | null>(null);
+
+  const load = useCallback(async () => {
+    const [shipRes, docRes, invRes] = await Promise.all([
+      fetch(`/api/shipments/${id}`),
+      fetch(`/api/documents?shipment=${id}`),
+      fetch(`/api/invoices?shipment=${id}`),
+    ]);
+    const [s, d, inv] = await Promise.all([shipRes.json(), docRes.json(), invRes.json()]);
+    setShipment(s); setDocs(Array.isArray(d) ? d : []); setInvoices(Array.isArray(inv) ? inv : []);
+    setNewStatus(s.status);
   }, [id]);
 
+  useEffect(() => { load(); }, [load]);
+
   async function updateStatus() {
-    if (!shipment || !statusUpdate) return;
-    setUpdatingStatus(true);
-    const res = await fetch(`/api/shipments/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: statusUpdate, statusNote, notifyClient }),
-    });
-    if (res.ok) {
-      const updated = await res.json();
-      setShipment((prev) => prev ? { ...prev, status: updated.status } : prev);
-      setStatusNote("");
-    }
-    setUpdatingStatus(false);
+    await fetch(`/api/shipments/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: newStatus, statusNote }) });
+    setStatusModal(false); setStatusNote(""); load();
   }
 
-  if (loading) return <div className="flex items-center justify-center h-96"><Loader2 className="w-8 h-8 animate-spin text-accent-teal" /></div>;
-  if (!shipment) return <div className="p-8 text-center text-text-secondary">Shipment not found.</div>;
+  async function uploadDoc() {
+    if (!file) return;
+    setUploading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("shipment", id as string);
+    fd.append("category", uploadForm.category);
+    fd.append("description", uploadForm.description);
+    fd.append("isVisibleToClient", String(uploadForm.isVisibleToClient));
+    fd.append("name", uploadForm.name || file.name);
+    await fetch("/api/documents", { method: "POST", body: fd });
+    setUploading(false); setUploadModal(false); setFile(null);
+    setUploadForm({ category: "OTHER", description: "", isVisibleToClient: true, name: "" });
+    load();
+  }
 
-  const totalCharges = shipment.charges.reduce((s, c) => s + c.totalAmt, 0);
-  const tabs = [
-    { id: "overview", label: "Overview" },
-    { id: "documents", label: `Documents (${shipment.documents.length})` },
-    { id: "charges", label: `Charges (${shipment.charges.length})` },
-    { id: "timeline", label: "Timeline" },
-    { id: "invoices", label: `Invoices (${shipment.invoices.length})` },
+  if (!shipment) return <div className="p-8 text-ink-muted">Loading...</div>;
+
+  const fields = [
+    { label: "Shipment ID", value: shipment.shipmentId },
+    { label: "B/L Number", value: shipment.blNo },
+    { label: "Container No.", value: shipment.containerNo },
+    { label: "Seal No.", value: shipment.sealNo },
+    { label: "Vessel", value: shipment.vessel },
+    { label: "Voyage No.", value: shipment.voyageNo },
+    { label: "Port of Loading", value: shipment.portOfLoading },
+    { label: "Port of Discharge", value: shipment.portOfDischarge },
+    { label: "Incoterms", value: shipment.incoterms },
+    { label: "Commodity", value: shipment.commodity },
+    { label: "Packages", value: shipment.packages },
+    { label: "Gross Weight", value: shipment.grossWeight ? `${shipment.grossWeight} kg` : undefined },
+    { label: "Volume", value: shipment.cbm ? `${shipment.cbm} CBM` : undefined },
+    { label: "ETD", value: formatDate(shipment.etd) },
+    { label: "ETA", value: formatDate(shipment.eta) },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 lg:p-8 space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/admin/shipments" className="text-text-secondary hover:text-primary-deep">
-            <ArrowLeft className="w-5 h-5" />
+      <div className="flex items-start justify-between">
+        <div>
+          <Link href="/dashboard/admin/shipments" className="inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-gold transition-colors mb-3">
+            <ArrowLeft size={12} /> Back to Shipments
           </Link>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-heading font-bold text-primary-deep font-mono">{shipment.jobNo}</h1>
-              <span className={`badge ${STATUS_COLORS[shipment.status]}`}>{STATUS_LABELS[shipment.status]}</span>
-            </div>
-            <p className="text-text-secondary mt-1">{shipment.client.name} • {shipment.portLoading} → {shipment.portDischarge}</p>
+          <div className="flex items-center gap-3">
+            <h1 className="page-heading">{shipment.shipmentId}</h1>
+            <StatusBadge status={shipment.status} />
           </div>
+          <p className="text-ink-secondary text-sm mt-1">{shipment.description}</p>
         </div>
-        <Link href={`/dashboard/admin/shipments/${id}/edit`} className="btn-secondary flex items-center gap-2 text-sm">
-          <Edit className="w-4 h-4" /> Edit
-        </Link>
-      </div>
-
-      {/* Status Update */}
-      <div className="bg-white rounded-2xl shadow-card p-5">
-        <h3 className="font-heading font-bold text-primary-deep mb-3">Update Status</h3>
-        <div className="flex flex-wrap gap-3">
-          <select className="select flex-1 min-w-48" value={statusUpdate} onChange={(e) => setStatusUpdate(e.target.value)}>
-            {ALL_STATUSES.map((s) => (
-              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-            ))}
-          </select>
-          <input
-            className="input flex-1 min-w-48"
-            placeholder="Optional note..."
-            value={statusNote}
-            onChange={(e) => setStatusNote(e.target.value)}
-          />
-          <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
-            <input type="checkbox" checked={notifyClient} onChange={(e) => setNotifyClient(e.target.checked)} className="rounded" />
-            Notify client
-          </label>
-          <button
-            onClick={updateStatus}
-            disabled={updatingStatus || statusUpdate === shipment.status}
-            className="btn-primary flex items-center gap-2 text-sm py-2"
-          >
-            {updatingStatus && <Loader2 className="w-4 h-4 animate-spin" />}
-            <Save className="w-4 h-4" /> Update
+        <div className="flex gap-2">
+          <button onClick={() => setStatusModal(true)} className="btn-ghost text-sm">Update Status</button>
+          <button onClick={() => setUploadModal(true)} className="btn-gold flex items-center gap-2 text-sm">
+            <Upload size={14} /> Upload Doc
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <div className="flex gap-0 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? "border-accent-teal text-accent-teal"
-                  : "border-transparent text-text-secondary hover:text-primary-deep"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === "overview" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl shadow-card p-5">
-              <h3 className="font-heading font-bold text-primary-deep mb-4">Shipment Details</h3>
-              <div className="grid grid-cols-2 gap-y-3 text-sm">
-                {[
-                  ["Mode", shipment.mode],
-                  ["Movement", shipment.movement],
-                  ["Liner", shipment.liner],
-                  ["Vessel", shipment.vessel],
-                  ["Voyage", shipment.voyage],
-                  [shipment.mode === "SEA" ? "BL No" : "AWB No", shipment.blNo || shipment.awbNo],
-                  ["MBL No", shipment.mblNo],
-                  ["BE No", shipment.beNo],
-                  ["HS Code", shipment.hsCode],
-                  ["Cargo Desc", shipment.cargoDesc],
-                  ["Packages", shipment.packages],
-                  ["Gross Weight", shipment.grossWeight ? `${shipment.grossWeight} KG` : null],
-                  ["CBM", shipment.cbm],
-                  ["CHA", shipment.chaName],
-                  ["Exam Type", shipment.examType],
-                  ["CFS", shipment.cfsName],
-                ].map(([label, val]) => val ? (
-                  <div key={String(label)}>
-                    <p className="text-text-secondary">{label}</p>
-                    <p className="font-medium text-primary-deep font-mono">{String(val)}</p>
-                  </div>
-                ) : null)}
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Info */}
+        <div className="lg:col-span-2 space-y-5">
+          {/* Details */}
+          <div className="card-luxury p-5">
+            <p className="section-heading">Shipment Details</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3">
+              {fields.filter(f => f.value).map(f => (
+                <div key={f.label}>
+                  <div className="text-xs text-ink-muted">{f.label}</div>
+                  <div className="text-sm text-ink font-medium mt-0.5">{String(f.value)}</div>
+                </div>
+              ))}
             </div>
-
-            <div className="bg-white rounded-2xl shadow-card p-5">
-              <h3 className="font-heading font-bold text-primary-deep mb-4">Key Dates</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-                {[
-                  ["ETA", shipment.eta],
-                  ["Sail Date", shipment.sailDate],
-                  ["Arrival", shipment.arrivalDate],
-                  ["Clearance", shipment.clearanceDate],
-                  ["Delivery", shipment.deliveryDate],
-                ].map(([label, date]) => (
-                  <div key={String(label)}>
-                    <p className="text-text-secondary text-xs">{label}</p>
-                    <p className="font-medium text-primary-deep">{formatDate(date as string)}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="bg-white rounded-2xl shadow-card p-5">
-              <h3 className="font-heading font-bold text-primary-deep mb-3">Client</h3>
-              <p className="font-semibold text-primary-deep">{shipment.client.name}</p>
-              {shipment.client.company && <p className="text-text-secondary text-sm">{shipment.client.company}</p>}
-              <p className="text-accent-teal text-sm mt-1">{shipment.client.email}</p>
-              {shipment.client.phone && <p className="text-text-secondary text-sm">{shipment.client.phone}</p>}
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-card p-5">
-              <h3 className="font-heading font-bold text-primary-deep mb-3">Charges Summary</h3>
-              <p className="text-2xl font-bold text-accent-teal">{formatCurrency(totalCharges)}</p>
-              <p className="text-text-secondary text-xs mt-1">{shipment.charges.length} line items</p>
-              <Link href="#" onClick={() => setActiveTab("charges")} className="text-accent-teal text-sm hover:underline mt-2 inline-block">
-                View charges →
-              </Link>
-            </div>
-
             {shipment.notes && (
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-                <h3 className="font-heading font-bold text-amber-800 mb-2 text-sm">Internal Notes</h3>
-                <p className="text-amber-700 text-sm">{shipment.notes}</p>
+              <div className="mt-4 pt-4 border-t border-surface-hover">
+                <div className="text-xs text-ink-muted mb-1">Notes</div>
+                <p className="text-sm text-ink-secondary">{shipment.notes}</p>
               </div>
             )}
           </div>
-        </div>
-      )}
 
-      {activeTab === "timeline" && (
-        <div className="bg-white rounded-2xl shadow-card p-6 max-w-2xl">
-          <h3 className="font-heading font-bold text-primary-deep mb-6">Tracking Timeline</h3>
-          <div className="space-y-4">
-            {ALL_STATUSES.map((s, i) => {
-              const statusIdx = ALL_STATUSES.indexOf(shipment.status);
-              const done = i <= statusIdx;
-              const active = i === statusIdx;
-              const update = shipment.trackingUpdates.find((u) => u.status === s);
-              return (
-                <div key={s} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    {done ? (
-                      <CheckCircle className={`w-6 h-6 ${active ? "text-accent-teal" : "text-green-500"}`} />
-                    ) : (
-                      <Circle className="w-6 h-6 text-gray-200" />
-                    )}
-                    {i < ALL_STATUSES.length - 1 && (
-                      <div className={`w-0.5 h-8 mt-1 ${i < statusIdx ? "bg-green-300" : "bg-gray-100"}`} />
-                    )}
-                  </div>
-                  <div className="pb-4">
-                    <p className={`font-medium text-sm ${done ? "text-primary-deep" : "text-gray-300"}`}>
-                      {STATUS_LABELS[s]}
-                    </p>
-                    {update && (
-                      <p className="text-text-secondary text-xs">
-                        {formatDate(update.createdAt)} {update.note && `— ${update.note}`}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {activeTab === "documents" && (
-        <div className="bg-white rounded-2xl shadow-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-heading font-bold text-primary-deep">Documents</h3>
-            <Link href={`/dashboard/admin/documents?shipment=${id}`} className="btn-primary text-sm flex items-center gap-2 py-2">
-              <Plus className="w-4 h-4" /> Upload
-            </Link>
-          </div>
-          {shipment.documents.length === 0 ? (
-            <p className="text-text-secondary text-sm">No documents uploaded yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {shipment.documents.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between p-3 bg-neutral-light rounded-lg">
-                  <div>
-                    <p className="font-medium text-sm text-primary-deep">{doc.label}</p>
-                    <p className="text-xs text-text-secondary">{doc.type} • {formatDate(doc.createdAt)}</p>
-                  </div>
-                  <a href={doc.filePath} className="text-accent-teal text-sm hover:underline" target="_blank">Download</a>
-                </div>
-              ))}
+          {/* Route */}
+          <div className="card-luxury p-5">
+            <p className="section-heading">Route</p>
+            <div className="flex items-center gap-3 text-sm">
+              <div className="text-center"><div className="text-gold font-medium">{shipment.origin}</div><div className="text-xs text-ink-muted">Origin</div></div>
+              <div className="flex-1 h-px bg-gradient-to-r from-gold/40 via-gold/20 to-gold/40" />
+              <div className="text-center"><div className="text-gold font-medium">{shipment.destination}</div><div className="text-xs text-ink-muted">Destination</div></div>
             </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === "charges" && (
-        <div className="bg-white rounded-2xl shadow-card overflow-hidden">
-          <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="font-heading font-bold text-primary-deep">Charges</h3>
-            <Link href={`/dashboard/admin/billing?shipment=${id}`} className="btn-primary text-sm flex items-center gap-2 py-2">
-              <Plus className="w-4 h-4" /> Add Charge
-            </Link>
           </div>
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-light">
-              <tr>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Charge Name</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Category</th>
-                <th className="text-left px-5 py-3 text-text-secondary font-medium">Vendor</th>
-                <th className="text-right px-5 py-3 text-text-secondary font-medium">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {shipment.charges.map((c) => (
-                <tr key={c.id}>
-                  <td className="px-5 py-3 font-medium text-primary-deep">{c.name}</td>
-                  <td className="px-5 py-3 text-text-secondary">{c.category.replace(/_/g, " ")}</td>
-                  <td className="px-5 py-3 text-text-secondary">{c.vendorName || "—"}</td>
-                  <td className="px-5 py-3 text-right font-mono font-medium">{formatCurrency(c.totalAmt)}</td>
-                </tr>
-              ))}
-              {shipment.charges.length > 0 && (
-                <tr className="bg-neutral-light">
-                  <td colSpan={3} className="px-5 py-3 font-bold text-primary-deep text-right">Total</td>
-                  <td className="px-5 py-3 text-right font-mono font-bold text-accent-teal">{formatCurrency(totalCharges)}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          {shipment.charges.length === 0 && (
-            <p className="p-8 text-center text-text-secondary">No charges added yet.</p>
-          )}
-        </div>
-      )}
 
-      {activeTab === "invoices" && (
-        <div className="bg-white rounded-2xl shadow-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-heading font-bold text-primary-deep">Invoices</h3>
-            <Link href={`/dashboard/admin/billing/new?shipment=${id}`} className="btn-primary text-sm flex items-center gap-2 py-2">
-              <Plus className="w-4 h-4" /> Generate Invoice
-            </Link>
+          {/* Documents */}
+          <div className="card-luxury overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-surface-hover">
+              <p className="section-heading mb-0">Documents ({docs.length})</p>
+              <button onClick={() => setUploadModal(true)} className="text-xs text-gold hover:text-gold-light transition-colors flex items-center gap-1">
+                <Upload size={12} /> Upload
+              </button>
+            </div>
+            {docs.length === 0 ? (
+              <div className="p-8 text-center text-ink-muted text-sm">No documents uploaded yet.</div>
+            ) : (
+              <table className="table-luxury">
+                <thead><tr><th>Name</th><th>Category</th><th>Size</th><th>Date</th><th>Visible</th><th></th></tr></thead>
+                <tbody>
+                  {docs.map(d => (
+                    <tr key={d._id}>
+                      <td className="text-sm text-ink">{d.name}</td>
+                      <td><span className="text-xs bg-surface-hover px-2 py-0.5 rounded text-ink-secondary">{d.category}</span></td>
+                      <td className="text-xs text-ink-muted">{(d.fileSize / 1024).toFixed(0)} KB</td>
+                      <td className="text-xs text-ink-muted">{formatDate(d.createdAt)}</td>
+                      <td>{d.isVisibleToClient ? <CheckCircle size={14} className="text-green-400" /> : <Clock size={14} className="text-ink-muted" />}</td>
+                      <td><a href={d.filePath} target="_blank" className="text-xs text-gold hover:text-gold-light">Download</a></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
-          {shipment.invoices.length === 0 ? (
-            <p className="text-text-secondary text-sm">No invoices generated yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {shipment.invoices.map((inv) => (
-                <div key={inv.id} className="flex items-center justify-between p-3 bg-neutral-light rounded-lg">
+
+          {/* Invoices */}
+          <div className="card-luxury overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-surface-hover">
+              <p className="section-heading mb-0">Invoices ({invoices.length})</p>
+              <Link href={`/dashboard/admin/invoices?new=1&shipment=${id}`} className="text-xs text-gold hover:text-gold-light transition-colors">+ Create Invoice</Link>
+            </div>
+            {invoices.length === 0 ? (
+              <div className="p-6 text-center text-ink-muted text-sm">No invoices for this shipment.</div>
+            ) : (
+              <table className="table-luxury">
+                <thead><tr><th>Invoice No</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead>
+                <tbody>
+                  {invoices.map(inv => (
+                    <tr key={inv._id}>
+                      <td className="font-medium text-sm">{inv.invoiceNo}</td>
+                      <td className="text-xs text-ink-secondary">{inv.invoiceType}</td>
+                      <td className="font-medium text-sm">{formatINR(inv.totalAmount)}</td>
+                      <td><InvoiceBadge status={inv.status} /></td>
+                      <td className="text-xs text-ink-muted">{formatDate(inv.invoiceDate)}</td>
+                      <td><Link href={`/dashboard/admin/invoices/${inv._id}`} className="text-xs text-gold hover:text-gold-light">View</Link></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        {/* Right sidebar */}
+        <div className="space-y-5">
+          {/* Client */}
+          <div className="card-luxury p-5">
+            <p className="section-heading">Client</p>
+            <div className="space-y-2 text-sm">
+              <div className="text-ink font-medium">{shipment.client?.name}</div>
+              {shipment.client?.company && <div className="text-ink-secondary">{shipment.client.company}</div>}
+              {shipment.client?.email && <div className="text-ink-muted">{shipment.client.email}</div>}
+              {shipment.client?.phone && <div className="text-ink-muted">{shipment.client.phone}</div>}
+              {shipment.client?.gst && <div className="text-xs text-ink-muted">GST: {shipment.client.gst}</div>}
+              {shipment.client?.address && <div className="text-xs text-ink-muted mt-2">{shipment.client.address}</div>}
+            </div>
+          </div>
+
+          {/* Timeline */}
+          <div className="card-luxury p-5">
+            <p className="section-heading">Timeline</p>
+            <div className="space-y-3">
+              {[...shipment.timeline].reverse().map((t, i) => (
+                <div key={i} className="flex gap-3 text-sm">
+                  <div className="w-2 h-2 rounded-full bg-gold mt-1.5 flex-shrink-0" />
                   <div>
-                    <p className="font-mono font-semibold text-primary-deep">{inv.invoiceNo}</p>
-                    <p className="text-xs text-text-secondary">{inv.type}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-accent-teal">{formatCurrency(inv.total)}</p>
-                    <span className={`badge text-xs ${inv.status === "PAID" ? "bg-green-100 text-green-800" : inv.status === "SENT" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"}`}>
-                      {inv.status}
-                    </span>
+                    <div className="text-ink font-medium text-xs">{STATUS_LABEL[t.status] || t.status}</div>
+                    {t.note && <div className="text-ink-muted text-xs">{t.note}</div>}
+                    <div className="text-ink-muted text-xs">{formatDate(t.date)}</div>
                   </div>
                 </div>
               ))}
             </div>
-          )}
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Status Modal */}
+      <Modal open={statusModal} onClose={() => setStatusModal(false)} title="Update Status" size="sm">
+        <div className="space-y-4">
+          <div>
+            <label className="label-luxury">New Status</label>
+            <select value={newStatus} onChange={e => setNewStatus(e.target.value)} className="input-luxury">
+              {STATUSES.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label-luxury">Note (optional)</label>
+            <input value={statusNote} onChange={e => setStatusNote(e.target.value)} className="input-luxury" placeholder="Add a note..." />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button onClick={() => setStatusModal(false)} className="btn-ghost text-sm">Cancel</button>
+            <button onClick={updateStatus} className="btn-gold text-sm">Update</button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Upload Modal */}
+      <Modal open={uploadModal} onClose={() => setUploadModal(false)} title="Upload Document" size="sm">
+        <div className="space-y-4">
+          <div>
+            <label className="label-luxury">Document Name</label>
+            <input value={uploadForm.name} onChange={e => setUploadForm(f => ({ ...f, name: e.target.value }))} className="input-luxury" placeholder="Leave blank to use filename" />
+          </div>
+          <div>
+            <label className="label-luxury">Category</label>
+            <select value={uploadForm.category} onChange={e => setUploadForm(f => ({ ...f, category: e.target.value }))} className="input-luxury">
+              {DOC_CATS.map(c => <option key={c} value={c}>{c.replace(/_/g, " ")}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label-luxury">Description</label>
+            <input value={uploadForm.description} onChange={e => setUploadForm(f => ({ ...f, description: e.target.value }))} className="input-luxury" placeholder="Optional" />
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" id="vis" checked={uploadForm.isVisibleToClient} onChange={e => setUploadForm(f => ({ ...f, isVisibleToClient: e.target.checked }))} className="accent-gold" />
+            <label htmlFor="vis" className="text-sm text-ink-secondary">Visible to client</label>
+          </div>
+          <div>
+            <label className="label-luxury">File *</label>
+            <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} className="input-luxury text-sm" />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button onClick={() => setUploadModal(false)} className="btn-ghost text-sm">Cancel</button>
+            <button onClick={uploadDoc} disabled={!file || uploading} className="btn-gold text-sm disabled:opacity-50 flex items-center gap-2">
+              {uploading ? <><span className="w-3 h-3 border-2 border-surface-deep/30 border-t-surface-deep rounded-full animate-spin" />Uploading...</> : <><FileText size={14} />Upload</>}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

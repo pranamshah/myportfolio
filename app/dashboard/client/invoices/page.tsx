@@ -1,75 +1,81 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Receipt, Download } from "lucide-react";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { Download } from "lucide-react";
+import { InvoiceBadge } from "@/components/ui/Badge";
+import { formatDate, formatINR } from "@/lib/utils";
 
 interface Invoice {
-  id: string;
-  invoiceNo: string;
-  type: string;
-  date: string;
-  total: number;
-  status: string;
-  shipment: { jobNo: string };
+  _id: string; invoiceNo: string; invoiceType: string; invoiceDate: string;
+  totalAmount: number; amountPaid: number; status: string;
+  shipment?: { shipmentId: string };
 }
 
 export default function ClientInvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/invoices").then((r) => r.json()).then(setInvoices).finally(() => setLoading(false));
+    fetch("/api/invoices").then(r => r.json()).then(d => setInvoices(Array.isArray(d) ? d : []));
   }, []);
 
+  const totalOutstanding = invoices.reduce((s, i) => s + i.totalAmount - i.amountPaid, 0);
+  const totalPaid = invoices.reduce((s, i) => s + i.amountPaid, 0);
+
   return (
-    <div className="space-y-6">
+    <div className="p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-heading font-bold text-primary-deep">My Invoices</h1>
-        <p className="text-text-secondary mt-1">{invoices.length} invoices</p>
+        <p className="section-heading">Billing</p>
+        <h1 className="page-heading">My Invoices</h1>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-card overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-neutral-light border-b">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="card-luxury p-4">
+          <div className="text-xs text-ink-muted mb-1">Total Invoiced</div>
+          <div className="text-lg font-semibold text-ink">{formatINR(invoices.reduce((s, i) => s + i.totalAmount, 0))}</div>
+        </div>
+        <div className="card-luxury p-4">
+          <div className="text-xs text-ink-muted mb-1">Amount Paid</div>
+          <div className="text-lg font-semibold text-green-400">{formatINR(totalPaid)}</div>
+        </div>
+        <div className="card-luxury p-4">
+          <div className="text-xs text-ink-muted mb-1">Outstanding</div>
+          <div className="text-lg font-semibold text-gold">{formatINR(totalOutstanding)}</div>
+        </div>
+      </div>
+
+      <div className="card-luxury overflow-hidden">
+        <table className="table-luxury">
+          <thead>
             <tr>
-              <th className="text-left px-5 py-3 text-text-secondary font-medium">Invoice No</th>
-              <th className="text-left px-5 py-3 text-text-secondary font-medium">Job No</th>
-              <th className="text-left px-5 py-3 text-text-secondary font-medium">Type</th>
-              <th className="text-left px-5 py-3 text-text-secondary font-medium">Date</th>
-              <th className="text-right px-5 py-3 text-text-secondary font-medium">Amount</th>
-              <th className="text-left px-5 py-3 text-text-secondary font-medium">Status</th>
-              <th className="text-left px-5 py-3 text-text-secondary font-medium">Download</th>
+              <th>Invoice No</th>
+              <th>Shipment</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Paid</th>
+              <th>Outstanding</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
-            {loading ? (
-              <tr><td colSpan={7} className="p-8 text-center text-text-secondary">Loading...</td></tr>
-            ) : invoices.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="p-12 text-center">
-                  <Receipt className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-text-secondary">No invoices yet</p>
-                </td>
-              </tr>
-            ) : invoices.map((inv) => (
-              <tr key={inv.id} className="hover:bg-neutral-light/50">
-                <td className="px-5 py-3 font-mono font-semibold text-accent-teal">{inv.invoiceNo}</td>
-                <td className="px-5 py-3 font-mono text-xs text-text-secondary">{inv.shipment.jobNo}</td>
-                <td className="px-5 py-3"><span className="badge bg-blue-100 text-blue-800 text-xs">{inv.type}</span></td>
-                <td className="px-5 py-3 text-text-secondary">{formatDate(inv.date)}</td>
-                <td className="px-5 py-3 text-right font-bold font-mono">{formatCurrency(inv.total)}</td>
-                <td className="px-5 py-3">
-                  <span className={`badge text-xs ${inv.status === "PAID" ? "bg-green-100 text-green-800" : inv.status === "SENT" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"}`}>
-                    {inv.status}
-                  </span>
-                </td>
-                <td className="px-5 py-3">
-                  <a href={`/api/invoices/${inv.id}/pdf`} className="text-accent-teal hover:underline flex items-center gap-1 text-xs">
-                    <Download className="w-3 h-3" /> PDF
+          <tbody>
+            {invoices.map(inv => (
+              <tr key={inv._id}>
+                <td className="font-medium text-sm text-ink">{inv.invoiceNo}</td>
+                <td className="text-xs text-ink-secondary">{inv.shipment?.shipmentId || "—"}</td>
+                <td><span className="text-xs bg-surface-hover px-2 py-0.5 rounded text-ink-secondary">{inv.invoiceType}</span></td>
+                <td className="font-medium text-sm">{formatINR(inv.totalAmount)}</td>
+                <td className="text-sm text-green-400">{formatINR(inv.amountPaid)}</td>
+                <td className="text-sm text-gold">{formatINR(inv.totalAmount - inv.amountPaid)}</td>
+                <td><InvoiceBadge status={inv.status} /></td>
+                <td className="text-xs text-ink-muted">{formatDate(inv.invoiceDate)}</td>
+                <td>
+                  <a href={`/api/invoices/${inv._id}/pdf`} target="_blank" className="inline-flex items-center gap-1 text-xs text-gold hover:text-gold-light">
+                    <Download size={12} /> PDF
                   </a>
                 </td>
               </tr>
             ))}
+            {invoices.length === 0 && <tr><td colSpan={9} className="text-center text-ink-muted py-10">No invoices yet.</td></tr>}
           </tbody>
         </table>
       </div>

@@ -1,117 +1,110 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --primary-deep: #0A1628;
-    --primary-ocean: #0E3D52;
-    --accent-teal: #0E7490;
-    --accent-gold: #D97706;
-  }
+  *, *::before, *::after { box-sizing: border-box; }
 
   html {
     scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    font-family: 'Inter', system-ui, sans-serif;
-    background-color: #F0F6FA;
-    color: #111827;
+    @apply bg-surface-deep text-ink font-sans;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(201,164,82,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(201,164,82,0.03) 0%, transparent 50%);
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Sora', 'Inter', sans-serif;
+  ::selection {
+    background: rgba(201, 164, 82, 0.25);
+    color: #F2EDE4;
   }
 
-  code, pre, .font-mono {
-    font-family: 'JetBrains Mono', monospace;
-  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0C0D12; }
+  ::-webkit-scrollbar-thumb { background: #2a2b35; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #C9A452; }
 }
 
 @layer components {
-  .btn-primary {
-    @apply bg-accent-teal text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-opacity-90 hover:shadow-teal-glow;
+  .gold-line {
+    background: linear-gradient(90deg, transparent, #C9A452, transparent);
+    height: 1px;
+    width: 100%;
   }
 
-  .btn-secondary {
-    @apply border-2 border-accent-teal text-accent-teal px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-accent-teal hover:text-white;
+  .gold-text {
+    background: linear-gradient(135deg, #E8C87A 0%, #C9A452 50%, #96783A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  .card {
-    @apply bg-white rounded-2xl shadow-card p-6;
+  .card-luxury {
+    @apply bg-surface-card border border-surface-hover rounded-lg;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3);
   }
 
-  .badge {
-    @apply px-3 py-1 rounded-full text-xs font-semibold;
+  .btn-gold {
+    @apply bg-gold text-surface-deep font-semibold px-5 py-2.5 rounded transition-all duration-200;
+    &:hover { @apply bg-gold-light shadow-gold; transform: translateY(-1px); }
+    &:active { transform: translateY(0); }
   }
 
-  .input {
-    @apply w-full border border-gray-200 rounded-lg px-4 py-3 text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent-teal focus:border-transparent transition-all;
+  .btn-ghost {
+    @apply border border-surface-hover text-ink-secondary px-5 py-2.5 rounded transition-all duration-200;
+    &:hover { @apply border-gold/40 text-ink; }
   }
 
-  .select {
-    @apply w-full border border-gray-200 rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-teal focus:border-transparent transition-all bg-white;
+  .input-luxury {
+    @apply bg-surface-primary border border-surface-hover rounded px-3 py-2 text-sm text-ink
+           placeholder-ink-muted focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/20
+           transition-all duration-200 w-full;
   }
 
-  .label {
-    @apply block text-sm font-medium text-text-secondary mb-1;
+  .label-luxury {
+    @apply text-xs text-ink-secondary uppercase tracking-wider mb-1 block;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded text-ink-secondary text-sm
+           transition-all duration-200 cursor-pointer;
+    &:hover { @apply bg-surface-hover text-ink; }
+    &.active { @apply bg-gold/10 text-gold border-l-2 border-gold; }
+  }
+
+  .table-luxury {
+    @apply w-full text-sm;
+    th { @apply text-xs text-ink-muted uppercase tracking-wider px-4 py-3 text-left border-b border-surface-hover; }
+    td { @apply px-4 py-3 border-b border-surface-hover/50 text-ink-secondary; }
+    tr:hover td { @apply bg-surface-hover/30; }
+  }
+
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border;
+  }
+
+  .page-heading {
+    @apply font-display text-2xl font-light text-ink mb-1;
+  }
+
+  .section-heading {
+    @apply text-xs text-ink-muted uppercase tracking-widest mb-4;
   }
 }
 
-/* Ocean wave animation */
-.ocean-wave {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 120px;
-  overflow: hidden;
-}
+@layer utilities {
+  .animate-fade-up { animation: fadeUp 0.6s ease both; }
+  .animate-fade-in { animation: fadeIn 0.4s ease both; }
 
-.wave {
-  position: absolute;
-  bottom: 0;
-  left: -100%;
-  width: 300%;
-  height: 100%;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%230E3D52' fill-opacity='0.4' d='M0,60 C360,120 720,0 1080,60 C1260,90 1350,75 1440,60 L1440,120 L0,120 Z'/%3E%3C/svg%3E") repeat-x;
-  animation: wave-move 8s linear infinite;
-}
+  .text-balance { text-wrap: balance; }
 
-.wave:nth-child(2) {
-  animation-duration: 12s;
-  animation-delay: -4s;
-  opacity: 0.6;
-}
-
-@keyframes wave-move {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(33.33%); }
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #F0F6FA; }
-::-webkit-scrollbar-thumb { background: #0E7490; border-radius: 3px; }
-
-/* Page transition progress bar */
-.progress-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #0E7490, #D97706);
-  z-index: 9999;
-  transition: width 0.3s ease;
-}
-
-/* Particle canvas */
-#particle-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  }
 }
