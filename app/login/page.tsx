@@ -10,14 +10,28 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function login(e?: React.FormEvent, overrideEmail?: string, overridePass?: string) {
+    e?.preventDefault();
     setLoading(true);
     setError("");
-    const res = await signIn("credentials", { email, password, redirect: false });
+    const res = await signIn("credentials", {
+      email: overrideEmail || email,
+      password: overridePass || password,
+      redirect: false,
+    });
     setLoading(false);
     if (res?.error) { setError("Invalid credentials. Please try again."); return; }
     router.push("/dashboard");
+  }
+
+  function quickLogin(role: "admin" | "client") {
+    const creds = {
+      admin: { email: "admin@navkarimpex.com", password: "Admin@12345" },
+      client: { email: "client@navkarimpex.com", password: "Client@12345" },
+    };
+    setEmail(creds[role].email);
+    setPassword(creds[role].password);
+    login(undefined, creds[role].email, creds[role].password);
   }
 
   return (
@@ -26,13 +40,12 @@ export default function LoginPage() {
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gold/5 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gold/3 rounded-full blur-[100px]" />
-        {/* Decorative grid */}
         <div className="absolute inset-0 opacity-[0.015]"
           style={{ backgroundImage: "linear-gradient(#C9A452 1px, transparent 1px), linear-gradient(90deg, #C9A452 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
       </div>
 
       <div className="relative w-full max-w-md mx-4 animate-fade-up">
-        {/* Logo / Brand */}
+        {/* Brand */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded border border-gold/40 flex items-center justify-center">
@@ -48,12 +61,32 @@ export default function LoginPage() {
           <p className="text-ink-secondary text-sm tracking-widest uppercase">Freight Forwarding</p>
         </div>
 
+        {/* Quick Demo Buttons */}
+        <div className="mb-4 grid grid-cols-2 gap-3">
+          <button
+            onClick={() => quickLogin("admin")}
+            disabled={loading}
+            className="card-luxury px-4 py-3 text-left hover:border-gold/40 transition-all disabled:opacity-50 group"
+          >
+            <div className="text-xs text-ink-muted mb-0.5 uppercase tracking-wider">Quick Login</div>
+            <div className="text-sm font-medium text-gold group-hover:text-gold-light">Admin Portal →</div>
+          </button>
+          <button
+            onClick={() => quickLogin("client")}
+            disabled={loading}
+            className="card-luxury px-4 py-3 text-left hover:border-gold/40 transition-all disabled:opacity-50 group"
+          >
+            <div className="text-xs text-ink-muted mb-0.5 uppercase tracking-wider">Quick Login</div>
+            <div className="text-sm font-medium text-ink-secondary group-hover:text-ink">Client Portal →</div>
+          </button>
+        </div>
+
         {/* Card */}
         <div className="card-luxury p-8">
           <h2 className="font-display text-xl font-light text-ink mb-1">Welcome back</h2>
           <p className="text-ink-muted text-sm mb-7">Sign in to access your portal</p>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={login} className="space-y-5">
             <div>
               <label className="label-luxury">Email Address</label>
               <input

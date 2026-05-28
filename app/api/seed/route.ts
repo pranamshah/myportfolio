@@ -41,6 +41,14 @@ export async function GET() {
   const admin = new User({ name: "Navkar Admin", email: adminEmail, password: adminPassword, role: "ADMIN", isActive: true });
   await admin.save();
 
+  const clientEmail = "client@navkarimpex.com";
+  const clientPassword = "Client@12345";
+  const existingClient = await User.findOne({ email: clientEmail });
+  if (!existingClient) {
+    const client = new User({ name: "Demo Client", email: clientEmail, password: clientPassword, role: "CLIENT", isActive: true });
+    await client.save();
+  }
+
   let ledgersCreated = 0;
   for (const led of DEFAULT_LEDGERS) {
     const exists = await Ledger.findOne({ name: led.name });
