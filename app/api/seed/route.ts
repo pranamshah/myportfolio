@@ -29,24 +29,25 @@ const DEFAULT_LEDGERS = [
 export async function GET() {
   await connectDB();
 
-  // Safety check — only seed if no admin exists
-  const existing = await User.findOne({ role: "ADMIN" });
-  if (existing) {
-    return NextResponse.json({ message: "Already seeded. Admin exists.", email: existing.email });
-  }
-
   const adminEmail = process.env.ADMIN_EMAIL || "admin@navkarimpex.com";
   const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
-
-  const admin = new User({ name: "Navkar Admin", email: adminEmail, password: adminPassword, role: "ADMIN", isActive: true });
-  await admin.save();
-
   const clientEmail = "client@navkarimpex.com";
   const clientPassword = "Client@12345";
+
+  let adminCreated = false;
+  const existingAdmin = await User.findOne({ role: "ADMIN" });
+  if (!existingAdmin) {
+    const admin = new User({ name: "Navkar Admin", email: adminEmail, password: adminPassword, role: "ADMIN", isActive: true });
+    await admin.save();
+    adminCreated = true;
+  }
+
+  let clientCreated = false;
   const existingClient = await User.findOne({ email: clientEmail });
   if (!existingClient) {
     const client = new User({ name: "Demo Client", email: clientEmail, password: clientPassword, role: "CLIENT", isActive: true });
     await client.save();
+    clientCreated = true;
   }
 
   let ledgersCreated = 0;
@@ -57,9 +58,9 @@ export async function GET() {
 
   return NextResponse.json({
     success: true,
-    message: "Database seeded successfully!",
-    admin: adminEmail,
-    password: adminPassword,
+    message: "Seed complete.",
+    adminCreated,
+    clientCreated,
     ledgersCreated,
   });
 }
