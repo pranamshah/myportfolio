@@ -7,7 +7,7 @@ import User from "@/models/User";
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { name, company, email, phone, password } = await req.json();
+    const { name, company, email, phone, password, accountType } = await req.json();
 
     if (!name?.trim() || !email?.trim() || !password) {
       return NextResponse.json({ error: "Name, email and password are required." }, { status: 400 });
@@ -21,18 +21,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "An account with this email already exists." }, { status: 400 });
     }
 
+    const role = accountType === "business" ? "ADMIN" : "CLIENT";
+
     const user = new User({
       name: name.trim(),
       company: company?.trim() || "",
       email: email.toLowerCase().trim(),
       phone: phone?.trim() || "",
       password,
-      role: "CLIENT",
+      role,
       isActive: true,
     });
 
     await user.save();
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, role });
   } catch (err) {
     console.error("Register error:", err);
     return NextResponse.json({ error: "Registration failed. Please try again." }, { status: 500 });

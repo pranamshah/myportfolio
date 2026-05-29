@@ -101,7 +101,7 @@ export default function LoginPage() {
               <button onClick={() => quickLogin("admin")} disabled={loading}
                 className="border border-gray-200 rounded-lg px-3 py-2.5 text-left hover:border-[#C9A452]/40
                            hover:bg-[#C9A452]/5 transition-all disabled:opacity-50 group bg-white">
-                <div className="text-[10px] text-gray-400 mb-0.5 uppercase tracking-wide">Manager</div>
+                <div className="text-[10px] text-gray-400 mb-0.5 uppercase tracking-wide">Business</div>
                 <div className="text-xs font-semibold text-[#C9A452] flex items-center gap-1
                                 group-hover:gap-1.5 transition-all">
                   Quick Login <ArrowRight size={11} />
