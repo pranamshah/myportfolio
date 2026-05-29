@@ -1,10 +1,10 @@
 import { Phone, Mail, MapPin, MessageSquare } from "lucide-react";
 
 const CONTACT_ITEMS = [
-  { icon: Phone, label: "Phone", value: "+91 98765 43210", href: "tel:+919876543210" },
-  { icon: Mail, label: "Email", value: "info@navkarimpex.com", href: "mailto:info@navkarimpex.com" },
+  { icon: Phone, label: "Phone", value: "+91 90807 67398", href: "tel:+919080767398" },
+  { icon: Mail, label: "Email", value: "navkarimpex.co@gmail.com", href: "mailto:navkarimpex.co@gmail.com" },
   { icon: MapPin, label: "Office", value: "Chennai, Tamil Nadu — 600 001", href: undefined },
-  { icon: MessageSquare, label: "WhatsApp", value: "+91 98765 43210", href: "https://wa.me/919876543210" },
+  { icon: MessageSquare, label: "WhatsApp", value: "+91 90807 67398", href: "https://wa.me/919080767398" },
 ];
 
 export default function ContactSection() {
@@ -93,7 +93,7 @@ export default function ContactSection() {
               </button>
               <p className="text-xs text-ink-muted text-center">
                 Or reach us instantly on{" "}
-                <a href="https://wa.me/919876543210"
+                <a href="https://wa.me/919080767398"
                   className="text-gold hover:text-gold-light">WhatsApp</a>
               </p>
             </div>

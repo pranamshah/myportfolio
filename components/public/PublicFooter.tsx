@@ -50,8 +50,8 @@ export default function PublicFooter() {
               ))}
             </ul>
             <div className="mt-6 space-y-1.5">
-              <p className="text-xs text-gray-400">📞 +91 98765 43210</p>
-              <p className="text-xs text-gray-400">✉️ info@navkarimpex.com</p>
+              <p className="text-xs text-gray-400">📞 +91 90807 67398</p>
+              <p className="text-xs text-gray-400">✉️ navkarimpex.co@gmail.com</p>
               <p className="text-xs text-gray-400">📍 Chennai, Tamil Nadu</p>
             </div>
           </div>
