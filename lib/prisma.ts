@@ -4,7 +4,18 @@ declare global {
   var _prismaClient: PrismaClient | undefined;
 }
 
-const prisma = global._prismaClient ?? new PrismaClient();
-if (process.env.NODE_ENV !== "production") global._prismaClient = prisma;
+function getInstance(): PrismaClient {
+  if (!global._prismaClient) {
+    global._prismaClient = new PrismaClient();
+  }
+  return global._prismaClient;
+}
+
+// Proxy so PrismaClient is only instantiated on first actual DB call, not at import time
+const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop: string | symbol) {
+    return getInstance()[prop as keyof PrismaClient];
+  },
+});
 
 export default prisma;
