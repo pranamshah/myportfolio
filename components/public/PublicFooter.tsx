@@ -17,11 +17,11 @@ export default function PublicFooter() {
               <span className="font-semibold text-gray-900">Navkar Impex</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed max-w-xs mb-4">
-              Chennai's trusted customs broker and freight forwarder since 2009. Moving cargo across
-              sea, air and land — anywhere in the world.
+              Navkar Impex is a Chennai-based freight forwarding agency. We coordinate sea freight,
+              air freight, customs, and door-to-door delivery for importers and exporters.
             </p>
             <p className="text-xs text-gray-400">
-              Licensed CHA · DGFT Registered · FIATA Member
+              Freight Forwarding Agent · Chennai, India
             </p>
           </div>
 

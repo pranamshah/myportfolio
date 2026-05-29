@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import LogisticsCanvas from "@/components/public/LogisticsCanvas";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,7 +41,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] flex">
+    <div className="min-h-screen flex relative" style={{ background: "linear-gradient(160deg, #FDFCF9 0%, #F0EDE6 100%)" }}>
+      {/* Background animation */}
+      <div className="absolute inset-0 opacity-60"><LogisticsCanvas /></div>
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-5/12 bg-gray-900 flex-col justify-between p-14 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5"
@@ -78,7 +81,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right: form */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-14">
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-14 relative z-10">
         <div className="w-full max-w-sm">
 
           {/* Mobile logo */}

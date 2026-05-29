@@ -7,7 +7,15 @@ import User from "@/models/User";
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { name, company, email, phone, password, accountType } = await req.json();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("DB connect error:", msg);
+    return NextResponse.json({ error: `Database connection failed: ${msg}` }, { status: 500 });
+  }
+
+  try {
+    const body = await req.json();
+    const { name, company, email, phone, password, accountType } = body;
 
     if (!name?.trim() || !email?.trim() || !password) {
       return NextResponse.json({ error: "Name, email and password are required." }, { status: 400 });
@@ -36,7 +44,8 @@ export async function POST(req: Request) {
     await user.save();
     return NextResponse.json({ success: true, role });
   } catch (err) {
-    console.error("Register error:", err);
-    return NextResponse.json({ error: "Registration failed. Please try again." }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Register error:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Building2, User } from "lucide-react";
+import LogisticsCanvas from "@/components/public/LogisticsCanvas";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -55,8 +56,10 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
+    <div className="min-h-screen flex items-center justify-center p-4 relative" style={{ background: "linear-gradient(160deg, #FDFCF9 0%, #F0EDE6 100%)" }}>
+      {/* Background animation */}
+      <div className="absolute inset-0 opacity-60"><LogisticsCanvas /></div>
+      <div className="w-full max-w-lg relative z-10">
 
         {/* Logo */}
         <div className="flex items-center gap-2 justify-center mb-8">
