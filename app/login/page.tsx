@@ -4,7 +4,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import LogisticsCanvas from "@/components/public/LogisticsCanvas";
+import GlobeCanvas from "@/components/public/GlobeCanvas";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,12 +42,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex relative" style={{ background: "linear-gradient(160deg, #FDFCF9 0%, #F0EDE6 100%)" }}>
-      {/* Background animation */}
-      <div className="absolute inset-0 opacity-60"><LogisticsCanvas /></div>
       {/* Left panel */}
-      <div className="hidden lg:flex lg:w-5/12 bg-gray-900 flex-col justify-between p-14 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5"
-          style={{ backgroundImage: "radial-gradient(circle at 30% 50%, #C9A452 0%, transparent 60%)" }} />
+      <div className="hidden lg:flex lg:w-5/12 bg-[#080d1a] flex-col justify-between p-14 relative overflow-hidden">
+        {/* Globe animation in left panel */}
+        <div className="absolute inset-0">
+          <GlobeCanvas cx={0.5} cy={0.5} radiusFactor={0.44} opacity={0.9} />
+        </div>
+        <div className="absolute inset-0"
+          style={{ background: "linear-gradient(to bottom, rgba(8,13,26,0.3) 0%, rgba(8,13,26,0.15) 50%, rgba(8,13,26,0.5) 100%)" }} />
 
         <div className="relative flex items-center gap-2">
           <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">

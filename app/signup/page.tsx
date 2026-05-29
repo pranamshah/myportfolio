@@ -4,7 +4,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Building2, User } from "lucide-react";
-import LogisticsCanvas from "@/components/public/LogisticsCanvas";
+import GlobeCanvas from "@/components/public/GlobeCanvas";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -56,9 +56,13 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative" style={{ background: "linear-gradient(160deg, #FDFCF9 0%, #F0EDE6 100%)" }}>
-      {/* Background animation */}
-      <div className="absolute inset-0 opacity-60"><LogisticsCanvas /></div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative" style={{ background: "linear-gradient(160deg, #080d1a 0%, #0d1630 100%)" }}>
+      {/* Globe background */}
+      <div className="absolute inset-0">
+        <GlobeCanvas cx={0.5} cy={0.45} radiusFactor={0.38} opacity={0.7} />
+      </div>
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(8,13,26,0.6) 100%)" }} />
       <div className="w-full max-w-lg relative z-10">
 
         {/* Logo */}
@@ -68,10 +72,10 @@ export default function SignupPage() {
               <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <span className="font-semibold text-gray-900">Navkar Impex</span>
+          <span className="font-semibold text-white">Navkar Impex</span>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1 text-center">Create your account</h1>
           <p className="text-sm text-gray-500 mb-8 text-center">Choose your account type to get started</p>
 

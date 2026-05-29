@@ -1,9 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongoose";
-import User from "@/models/User";
-import Ledger from "@/models/Ledger";
+import bcrypt from "bcryptjs";
+import prisma from "@/lib/prisma";
 
 const DEFAULT_LEDGERS = [
   { name: "Cash", group: "Cash in Hand", type: "ASSET", openingBalance: 0, openingType: "DR", isSystem: true },
@@ -27,40 +26,49 @@ const DEFAULT_LEDGERS = [
 ];
 
 export async function GET() {
-  await connectDB();
-
   const adminEmail = process.env.ADMIN_EMAIL || "admin@navkarimpex.com";
   const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
   const clientEmail = "client@navkarimpex.com";
   const clientPassword = "Client@12345";
 
   let adminCreated = false;
-  const existingAdmin = await User.findOne({ role: "ADMIN" });
+  const existingAdmin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
   if (!existingAdmin) {
-    const admin = new User({ name: "Navkar Admin", email: adminEmail, password: adminPassword, role: "ADMIN", isActive: true });
-    await admin.save();
+    await prisma.user.create({
+      data: {
+        name: "Navkar Admin",
+        email: adminEmail,
+        password: await bcrypt.hash(adminPassword, 12),
+        role: "ADMIN",
+        isActive: true,
+      },
+    });
     adminCreated = true;
   }
 
   let clientCreated = false;
-  const existingClient = await User.findOne({ email: clientEmail });
+  const existingClient = await prisma.user.findUnique({ where: { email: clientEmail } });
   if (!existingClient) {
-    const client = new User({ name: "Demo Client", email: clientEmail, password: clientPassword, role: "CLIENT", isActive: true });
-    await client.save();
+    await prisma.user.create({
+      data: {
+        name: "Demo Client",
+        email: clientEmail,
+        password: await bcrypt.hash(clientPassword, 12),
+        role: "CLIENT",
+        isActive: true,
+      },
+    });
     clientCreated = true;
   }
 
   let ledgersCreated = 0;
   for (const led of DEFAULT_LEDGERS) {
-    const exists = await Ledger.findOne({ name: led.name });
-    if (!exists) { await Ledger.create(led); ledgersCreated++; }
+    const exists = await prisma.ledger.findUnique({ where: { name: led.name } });
+    if (!exists) {
+      await prisma.ledger.create({ data: led });
+      ledgersCreated++;
+    }
   }
 
-  return NextResponse.json({
-    success: true,
-    message: "Seed complete.",
-    adminCreated,
-    clientCreated,
-    ledgersCreated,
-  });
+  return NextResponse.json({ success: true, message: "Seed complete.", adminCreated, clientCreated, ledgersCreated });
 }
