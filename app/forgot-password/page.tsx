@@ -1,72 +1,55 @@
 import Link from "next/link";
 import { Mail, ArrowLeft } from "lucide-react";
-import { Anchor } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="min-h-screen bg-surface-deep flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gold/4 rounded-full blur-[120px]" />
-        <div className="absolute inset-0 opacity-[0.012]"
-          style={{
-            backgroundImage: "linear-gradient(#C9A452 1px, transparent 1px), linear-gradient(90deg, #C9A452 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
-          }} />
-      </div>
+    <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center p-6">
+      <div className="w-full max-w-sm text-center">
 
-      <div className="relative w-full max-w-md animate-fade-up">
         {/* Logo */}
-        <div className="flex items-center gap-3 justify-center mb-10">
-          <div className="w-9 h-9 border border-gold/40 rounded flex items-center justify-center">
-            <Anchor size={15} className="text-gold" />
+        <div className="flex items-center gap-2 justify-center mb-10">
+          <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
-          <span className="font-display text-xl font-light text-ink">
-            Navkar <span className="text-gold">Impex</span>
-          </span>
+          <span className="font-semibold text-gray-900">Navkar Impex</span>
         </div>
 
         {/* Icon */}
-        <div className="w-16 h-16 rounded-full bg-gold/8 border border-gold/20 flex items-center
-                        justify-center mx-auto mb-6">
-          <Mail size={26} className="text-gold" />
+        <div className="w-14 h-14 rounded-full bg-[#C9A452]/10 border border-[#C9A452]/20 flex items-center
+                        justify-center mx-auto mb-5">
+          <Mail size={22} className="text-[#C9A452]" />
         </div>
 
-        <h1 className="font-display text-3xl font-light text-ink text-center mb-2">
-          Forgot Password?
-        </h1>
-        <div className="gold-line max-w-[100px] mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Forgot Password?</h1>
+        <div className="w-10 h-px bg-[#C9A452] mx-auto mb-5" />
 
-        <div className="card-luxury p-8 mb-6 text-center">
-          <p className="text-ink-secondary text-sm leading-relaxed mb-6">
-            To reset your password, please contact our admin team. We&apos;ll verify your account and send you a new password within 24 hours.
+        <div className="bg-white border border-gray-200 rounded-xl p-7 mb-6 text-left">
+          <p className="text-sm text-gray-500 leading-relaxed mb-5 text-center">
+            To reset your password, contact our team. We&apos;ll verify your account and send a new password within 24 hours.
           </p>
 
-          <div className="bg-surface-hover/50 rounded-lg p-5 text-left space-y-3">
-            <p className="text-[10px] uppercase tracking-widest text-ink-muted mb-3">Contact Admin</p>
+          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Contact Us</p>
             <a href="mailto:admin@navkarimpex.com"
               className="flex items-center gap-3 text-sm group">
-              <div className="w-8 h-8 rounded bg-gold/10 flex items-center justify-center flex-shrink-0">
-                <Mail size={14} className="text-gold" />
+              <div className="w-8 h-8 rounded-lg bg-[#C9A452]/10 flex items-center justify-center flex-shrink-0">
+                <Mail size={14} className="text-[#C9A452]" />
               </div>
-              <span className="text-gold group-hover:text-gold-light transition-colors">
-                admin@navkarimpex.com
-              </span>
+              <span className="text-[#C9A452] group-hover:underline font-medium">admin@navkarimpex.com</span>
             </a>
-            <p className="text-xs text-ink-muted pt-2 pl-11">
-              Please include your registered email address so we can identify your account.
+            <p className="text-xs text-gray-400 pl-11">
+              Include your registered email so we can find your account.
             </p>
           </div>
         </div>
 
-        <div className="text-center">
-          <Link href="/login"
-            className="inline-flex items-center gap-2 text-sm text-ink-secondary hover:text-ink
-                       transition-colors">
-            <ArrowLeft size={14} />
-            Back to Login
-          </Link>
-        </div>
+        <Link href="/login"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">
+          <ArrowLeft size={14} />
+          Back to Login
+        </Link>
       </div>
     </div>
   );

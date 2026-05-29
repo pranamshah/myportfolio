@@ -4,7 +4,6 @@ import ServicesSection from "@/components/public/ServicesSection";
 import StatsSection from "@/components/public/StatsSection";
 import ProcessSection from "@/components/public/ProcessSection";
 import CtaBanner from "@/components/public/CtaBanner";
-import ContactSection from "@/components/public/ContactSection";
 import PublicFooter from "@/components/public/PublicFooter";
 
 export default function HomePage() {
@@ -17,7 +16,6 @@ export default function HomePage() {
         <StatsSection />
         <ProcessSection />
         <CtaBanner />
-        <ContactSection />
       </main>
       <PublicFooter />
     </>

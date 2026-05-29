@@ -2,13 +2,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Menu, X, Anchor } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 const NAV_LINKS = [
   { label: "Services", href: "#services" },
   { label: "How It Works", href: "#process" },
   { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
 ];
 
 export default function PublicNav() {
@@ -17,89 +16,95 @@ export default function PublicNav() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
   const dashHref = session?.user?.role === "ADMIN" ? "/dashboard/admin" : "/dashboard/client";
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-      scrolled
-        ? "bg-surface-deep/95 backdrop-blur-lg border-b border-surface-hover/80 shadow-2xl"
-        : "bg-transparent"
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      scrolled ? "bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm" : "bg-transparent"
     }`}>
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 border border-gold/40 rounded flex items-center justify-center
-                          group-hover:border-gold/70 transition-colors duration-300">
-            <Anchor size={15} className="text-gold" />
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
-          <span className="font-display text-xl font-light text-ink tracking-wide">
-            Navkar <span className="text-gold">Impex</span>
+          <span className="text-gray-900 font-semibold text-base tracking-tight">
+            Navkar Impex
           </span>
         </Link>
 
-        {/* Desktop nav links */}
+        {/* Desktop links */}
         <div className="hidden md:flex items-center gap-8">
           {NAV_LINKS.map(l => (
             <a key={l.label} href={l.href}
-              className="text-sm text-ink-secondary hover:text-ink transition-colors duration-200 relative group">
+              className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">
               {l.label}
-              <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gold transition-all duration-300 group-hover:w-full" />
             </a>
           ))}
         </div>
 
-        {/* CTA buttons */}
-        <div className="hidden md:flex items-center gap-3">
+        {/* Auth CTAs */}
+        <div className="hidden md:flex items-center gap-2">
           {session ? (
-            <Link href={dashHref} className="btn-gold text-sm px-5 py-2">
-              My Dashboard →
+            <Link href={dashHref}
+              className="text-sm font-semibold bg-[#C9A452] text-white px-4 py-2 rounded-md hover:bg-[#b8922f] transition-colors">
+              Dashboard →
             </Link>
           ) : (
             <>
               <Link href="/login"
-                className="text-sm text-ink-secondary border border-surface-hover px-4 py-2 rounded
-                           hover:border-gold/40 hover:text-ink transition-all duration-200">
+                className="text-sm font-medium text-gray-600 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors">
                 Login
               </Link>
-              <Link href="/signup" className="btn-gold text-sm px-5 py-2">
-                Sign Up Free
+              <Link href="/signup"
+                className="text-sm font-semibold bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors">
+                Get Started
               </Link>
             </>
           )}
         </div>
 
         {/* Mobile toggle */}
-        <button
-          className="md:hidden w-9 h-9 flex items-center justify-center text-ink-secondary hover:text-ink transition-colors"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
+        <button className="md:hidden p-1 text-gray-500 hover:text-gray-900 transition-colors"
+          onClick={() => setOpen(!open)} aria-label="Toggle menu">
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
       {/* Mobile drawer */}
       {open && (
-        <div className="md:hidden bg-surface-primary/95 backdrop-blur-lg border-t border-surface-hover px-6 py-5 space-y-4">
+        <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 space-y-3">
           {NAV_LINKS.map(l => (
             <a key={l.label} href={l.href}
-              className="block text-ink-secondary hover:text-ink text-sm py-1.5 transition-colors"
+              className="block text-sm text-gray-600 hover:text-gray-900 py-1.5 font-medium"
               onClick={() => setOpen(false)}>
               {l.label}
             </a>
           ))}
-          <div className="pt-4 border-t border-surface-hover flex flex-col gap-3">
+          <div className="pt-3 border-t border-gray-100 flex flex-col gap-2">
             {session ? (
-              <Link href={dashHref} className="btn-gold text-sm text-center">My Dashboard →</Link>
+              <Link href={dashHref}
+                className="text-sm font-semibold bg-[#C9A452] text-white px-4 py-2 rounded-md text-center">
+                Dashboard →
+              </Link>
             ) : (
               <>
-                <Link href="/login" className="btn-ghost text-sm text-center">Login</Link>
-                <Link href="/signup" className="btn-gold text-sm text-center">Sign Up Free</Link>
+                <Link href="/login"
+                  className="text-sm font-medium text-gray-600 border border-gray-200 px-4 py-2 rounded-md text-center">
+                  Login
+                </Link>
+                <Link href="/signup"
+                  className="text-sm font-semibold bg-gray-900 text-white px-4 py-2 rounded-md text-center">
+                  Get Started
+                </Link>
               </>
             )}
           </div>
