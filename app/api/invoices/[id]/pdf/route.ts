@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import prisma from "@/lib/prisma";
+import { connectDB } from "@/lib/mongoose";
+import Invoice from "@/models/Invoice";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { renderToBuffer } = require("@react-pdf/renderer");
 import { InvoicePDF } from "@/components/pdfs/InvoicePDF";
@@ -12,57 +13,39 @@ import React from "react";
 export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  await connectDB();
 
-  const invoice = await prisma.invoice.findUnique({
-    where: { id: params.id },
-    include: {
-      client: { select: { name: true, company: true, address: true, gst: true, email: true, phone: true } },
-      shipment: true,
-    },
-  });
+  const invoice = await Invoice.findById(params.id).populate("client", "name company address gst email phone").populate("shipment");
   if (!invoice) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (session.user.role === "CLIENT" && invoice.clientId !== session.user.id)
+  if (session.user.role === "CLIENT" && invoice.client._id.toString() !== session.user.id)
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const shipmentData = invoice.shipment ? {
-    shipmentId: invoice.shipment.shipmentId,
-    description: invoice.shipment.description,
-    blNo: invoice.shipment.blNo ?? undefined,
-    containerNo: invoice.shipment.containerNo ?? undefined,
-    portOfLoading: invoice.shipment.portOfLoading,
-    portOfDischarge: invoice.shipment.portOfDischarge,
-    vessel: invoice.shipment.vessel ?? undefined,
-  } : undefined;
+  let shipmentData = undefined;
+  if (invoice.shipment) {
+    const s = invoice.shipment as { shipmentId?: string; description?: string; blNo?: string; containerNo?: string; portOfLoading?: string; portOfDischarge?: string; vessel?: string };
+    shipmentData = { shipmentId: s.shipmentId || "", description: s.description || "", blNo: s.blNo, containerNo: s.containerNo, portOfLoading: s.portOfLoading, portOfDischarge: s.portOfDischarge, vessel: s.vessel };
+  }
 
+  const clientData = invoice.client as unknown as { name: string; company?: string; address?: string; gst?: string; email?: string; phone?: string };
   const invData = {
     invoiceNo: invoice.invoiceNo,
     invoiceType: invoice.invoiceType as "SERVICE" | "REIMBURSEMENT",
     invoiceDate: invoice.invoiceDate.toISOString(),
     dueDate: invoice.dueDate?.toISOString(),
-    client: {
-      name: invoice.client.name,
-      company: invoice.client.company ?? undefined,
-      address: invoice.client.address ?? undefined,
-      gst: invoice.client.gst ?? undefined,
-      email: invoice.client.email,
-      phone: invoice.client.phone ?? undefined,
-    },
+    client: { name: clientData.name, company: clientData.company, address: clientData.address, gst: clientData.gst, email: clientData.email, phone: clientData.phone },
     shipment: shipmentData,
-    lineItems: invoice.lineItems as { description: string; hsn?: string; qty: number; rate: number; amount: number }[],
+    lineItems: invoice.lineItems,
     subtotal: invoice.subtotal,
-    cgst: invoice.cgst ?? undefined,
-    sgst: invoice.sgst ?? undefined,
-    igst: invoice.igst ?? undefined,
-    tds: invoice.tds ?? undefined,
+    cgst: invoice.cgst,
+    sgst: invoice.sgst,
+    igst: invoice.igst,
+    tds: invoice.tds,
     totalAmount: invoice.totalAmount,
-    notes: invoice.notes ?? undefined,
+    notes: invoice.notes,
   };
 
   const buffer = await renderToBuffer(React.createElement(InvoicePDF, { inv: invData }));
   return new NextResponse(buffer, {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${invoice.invoiceNo}.pdf"`,
-    },
+    headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="${invoice.invoiceNo}.pdf"` },
   });
 }
