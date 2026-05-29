@@ -54,7 +54,7 @@ export default function LoginPage() {
 
         <div className="relative flex items-center gap-2.5">
           <NavkarLogo variant="symbol" symbolSize={36} light />
-          <NavkarLogo variant="wordmark" light />
+          <NavkarLogo variant="wordmark" className="h-7 w-auto" light />
         </div>
 
         <div className="relative">

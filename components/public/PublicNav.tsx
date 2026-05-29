@@ -33,7 +33,7 @@ export default function PublicNav() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <NavkarLogo variant="symbol" symbolSize={34} light={!scrolled} />
-          <NavkarLogo variant="wordmark" light={!scrolled} />
+          <NavkarLogo variant="wordmark" className="h-7 w-auto" light={!scrolled} />
         </Link>
 
         {/* Desktop links */}

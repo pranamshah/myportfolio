@@ -26,7 +26,7 @@ export default function AdminSidebar() {
       {/* Logo */}
       <div className="px-5 py-5 border-b border-surface-hover">
         <NavkarLogo variant="symbol" symbolSize={38} className="mb-2" />
-        <NavkarLogo variant="wordmark" className="mb-1" />
+        <NavkarLogo variant="wordmark" className="h-7 w-auto mb-1" />
         <div className="text-xs text-ink-muted mt-1">Admin Portal</div>
       </div>
 
