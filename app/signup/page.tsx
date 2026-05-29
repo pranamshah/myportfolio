@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Building2, User } from "lucide-react";
 import GlobeCanvas from "@/components/public/GlobeCanvas";
+import NavkarLogo from "@/components/NavkarLogo";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -66,13 +67,9 @@ export default function SignupPage() {
       <div className="w-full max-w-lg relative z-10">
 
         {/* Logo */}
-        <div className="flex items-center gap-2 justify-center mb-8">
-          <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="font-semibold text-white">Navkar Impex</span>
+        <div className="flex items-center gap-2.5 justify-center mb-8">
+          <NavkarLogo variant="symbol" symbolSize={40} />
+          <NavkarLogo variant="wordmark" className="h-9 w-auto brightness-0 invert" />
         </div>
 
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-8">

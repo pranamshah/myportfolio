@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Menu, X } from "lucide-react";
+import NavkarLogo from "@/components/NavkarLogo";
 
 const NAV_LINKS = [
   { label: "Services", href: "#services" },
@@ -30,15 +31,9 @@ export default function PublicNav() {
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="text-gray-900 font-semibold text-base tracking-tight">
-            Navkar Impex
-          </span>
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <NavkarLogo variant="symbol" symbolSize={36} />
+          <NavkarLogo variant="wordmark" className="h-8 w-auto" />
         </Link>
 
         {/* Desktop links */}

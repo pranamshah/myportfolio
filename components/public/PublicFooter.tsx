@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NavkarLogo from "@/components/NavkarLogo";
 
 export default function PublicFooter() {
   return (
@@ -8,13 +9,9 @@ export default function PublicFooter() {
 
           {/* Brand */}
           <div className="md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <span className="font-semibold text-gray-900">Navkar Impex</span>
+            <div className="flex items-center gap-3 mb-4">
+              <NavkarLogo variant="symbol" symbolSize={44} />
+              <NavkarLogo variant="wordmark" className="h-10 w-auto" />
             </div>
             <p className="text-sm text-gray-500 leading-relaxed max-w-xs mb-4">
               Navkar Impex is a Chennai-based freight forwarding agency. We coordinate sea freight,

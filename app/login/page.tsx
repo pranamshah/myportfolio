@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import GlobeCanvas from "@/components/public/GlobeCanvas";
+import NavkarLogo from "@/components/NavkarLogo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,13 +52,9 @@ export default function LoginPage() {
         <div className="absolute inset-0"
           style={{ background: "linear-gradient(to bottom, rgba(8,13,26,0.3) 0%, rgba(8,13,26,0.15) 50%, rgba(8,13,26,0.5) 100%)" }} />
 
-        <div className="relative flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="text-white font-semibold">Navkar Impex</span>
+        <div className="relative flex items-center gap-2.5">
+          <NavkarLogo variant="symbol" symbolSize={36} />
+          <NavkarLogo variant="wordmark" className="h-8 w-auto brightness-0 invert" />
         </div>
 
         <div className="relative">
@@ -87,13 +84,9 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
 
           {/* Mobile logo */}
-          <div className="flex lg:hidden items-center gap-2 mb-8 justify-center">
-            <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <span className="font-semibold text-gray-900">Navkar Impex</span>
+          <div className="flex lg:hidden items-center gap-2.5 mb-8 justify-center">
+            <NavkarLogo variant="symbol" symbolSize={36} />
+            <NavkarLogo variant="wordmark" className="h-8 w-auto" />
           </div>
 
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h1>

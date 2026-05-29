@@ -4,8 +4,9 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Ship, FileText, FolderOpen, MessageSquare, Users,
-  Calculator, LogOut, Package, ChevronRight
+  Calculator, LogOut, ChevronRight
 } from "lucide-react";
+import NavkarLogo from "@/components/NavkarLogo";
 
 const nav = [
   { label: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },
@@ -23,16 +24,10 @@ export default function AdminSidebar() {
   return (
     <aside className="w-60 bg-surface-primary border-r border-surface-hover flex flex-col h-screen sticky top-0 flex-shrink-0">
       {/* Logo */}
-      <div className="px-5 py-6 border-b border-surface-hover">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded border border-gold/40 flex items-center justify-center flex-shrink-0">
-            <Package size={14} className="text-gold" />
-          </div>
-          <div>
-            <div className="font-display text-sm font-semibold text-ink leading-tight">Navkar Impex</div>
-            <div className="text-xs text-ink-muted">Admin Portal</div>
-          </div>
-        </div>
+      <div className="px-5 py-5 border-b border-surface-hover">
+        <NavkarLogo variant="symbol" symbolSize={38} className="mb-2" />
+        <NavkarLogo variant="wordmark" className="h-7 w-auto mb-1" />
+        <div className="text-xs text-ink-muted mt-1">Admin Portal</div>
       </div>
 
       {/* Nav */}
