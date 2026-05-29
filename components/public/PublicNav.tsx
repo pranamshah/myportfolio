@@ -31,9 +31,13 @@ export default function PublicNav() {
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <NavkarLogo variant="symbol" symbolSize={34} light={!scrolled} />
-          <NavkarLogo variant="wordmark" className="h-7 w-auto" light={!scrolled} />
+        <Link href="/" className="flex items-center group">
+          <div className={`flex items-center gap-2 transition-all duration-300 rounded-lg ${
+            !scrolled ? "bg-white/90 backdrop-blur-sm px-2.5 py-1.5" : ""
+          }`}>
+            <NavkarLogo variant="symbol" symbolSize={30} />
+            <NavkarLogo variant="wordmark" className="h-6 w-auto" />
+          </div>
         </Link>
 
         {/* Desktop links */}

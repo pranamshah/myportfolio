@@ -67,9 +67,9 @@ export default function SignupPage() {
       <div className="w-full max-w-lg relative z-10">
 
         {/* Logo */}
-        <div className="flex items-center gap-2.5 justify-center mb-8">
-          <NavkarLogo variant="symbol" symbolSize={40} light />
-          <NavkarLogo variant="wordmark" className="h-8 w-auto" light />
+        <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 mb-8 mx-auto">
+          <NavkarLogo variant="symbol" symbolSize={34} />
+          <NavkarLogo variant="wordmark" className="h-7 w-auto" />
         </div>
 
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-8">

@@ -52,9 +52,9 @@ export default function LoginPage() {
         <div className="absolute inset-0"
           style={{ background: "linear-gradient(to bottom, rgba(8,13,26,0.3) 0%, rgba(8,13,26,0.15) 50%, rgba(8,13,26,0.5) 100%)" }} />
 
-        <div className="relative flex items-center gap-2.5">
-          <NavkarLogo variant="symbol" symbolSize={36} light />
-          <NavkarLogo variant="wordmark" className="h-7 w-auto" light />
+        <div className="relative inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2">
+          <NavkarLogo variant="symbol" symbolSize={32} />
+          <NavkarLogo variant="wordmark" className="h-6 w-auto" />
         </div>
 
         <div className="relative">
@@ -84,9 +84,9 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
 
           {/* Mobile logo */}
-          <div className="flex lg:hidden items-center gap-2.5 mb-8 justify-center">
-            <NavkarLogo variant="symbol" symbolSize={36} />
-            <NavkarLogo variant="wordmark" className="h-8 w-auto" />
+          <div className="flex lg:hidden items-center gap-2 mb-8 justify-center">
+            <NavkarLogo variant="symbol" symbolSize={32} />
+            <NavkarLogo variant="wordmark" className="h-6 w-auto" />
           </div>
 
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h1>
