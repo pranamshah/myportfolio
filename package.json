@@ -4,14 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "seed": "node scripts/seed.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
-    "@prisma/client": "^7.8.0",
     "@react-pdf/renderer": "^3.4.4",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
@@ -24,7 +23,6 @@
     "next": "14.2.16",
     "next-auth": "^4.24.10",
     "nodemailer": "^6.9.15",
-    "prisma": "^7.8.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.2",

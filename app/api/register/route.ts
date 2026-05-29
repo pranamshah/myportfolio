@@ -1,10 +1,17 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import prisma from "@/lib/prisma";
+import { connectDB } from "@/lib/mongoose";
+import User from "@/models/User";
 
 export async function POST(req: Request) {
+  try {
+    await connectDB();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: `Database connection failed: ${msg}` }, { status: 500 });
+  }
+
   try {
     const { name, company, email, phone, password, accountType } = await req.json();
 
@@ -15,30 +22,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
     }
 
-    const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+    const existing = await User.findOne({ email: email.toLowerCase().trim() });
     if (existing) {
       return NextResponse.json({ error: "An account with this email already exists." }, { status: 400 });
     }
 
-    const hashed = await bcrypt.hash(password, 12);
     const role = accountType === "business" ? "ADMIN" : "CLIENT";
 
-    const user = await prisma.user.create({
-      data: {
-        name: name.trim(),
-        company: company?.trim() || "",
-        email: email.toLowerCase().trim(),
-        phone: phone?.trim() || "",
-        password: hashed,
-        role,
-        isActive: true,
-      },
+    const user = new User({
+      name: name.trim(),
+      company: company?.trim() || "",
+      email: email.toLowerCase().trim(),
+      phone: phone?.trim() || "",
+      password,
+      role,
+      isActive: true,
     });
 
-    return NextResponse.json({ success: true, role, id: user.id });
+    await user.save();
+    return NextResponse.json({ success: true, role });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error("Register error:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

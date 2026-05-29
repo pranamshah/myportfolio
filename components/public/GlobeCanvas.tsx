@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { CONTINENTS } from "./worldOutline";
 
 const PORTS = [
   { lat: 13.0, lon: 80.3 },    // Chennai
@@ -13,7 +14,7 @@ const PORTS = [
   { lat: 34.6, lon: 135.5 },   // Osaka
   { lat: -1.3, lon: 36.8 },    // Mombasa
   { lat: -33.9, lon: 18.4 },   // Cape Town
-  { lat: 29.9, lon: 32.6 },    // Suez / Port Said
+  { lat: 29.9, lon: 32.6 },    // Suez
 ];
 
 const ROUTES = [
@@ -86,48 +87,75 @@ export default function GlobeCanvas({ cx: cxFactor = 0.5, cy: cyFactor = 0.5, ra
 
       ctx!.globalAlpha = opacity;
 
-      // --- Globe body ---
+      // --- Ocean (globe body) ---
       const body = ctx!.createRadialGradient(px - R * 0.25, py - R * 0.25, R * 0.05, px, py, R);
-      body.addColorStop(0,   "rgba(55, 90, 155, 0.92)");
-      body.addColorStop(0.5, "rgba(25, 50, 110, 0.94)");
-      body.addColorStop(1,   "rgba(8,  20,  60, 0.97)");
+      body.addColorStop(0,   "rgba(45, 80, 145, 0.95)");
+      body.addColorStop(0.5, "rgba(20, 45, 105, 0.96)");
+      body.addColorStop(1,   "rgba(6,  18,  55, 0.98)");
       ctx!.beginPath();
       ctx!.arc(px, py, R, 0, Math.PI * 2);
       ctx!.fillStyle = body;
       ctx!.fill();
 
-      // --- Clip to globe for grid ---
       ctx!.save();
       ctx!.beginPath();
       ctx!.arc(px, py, R, 0, Math.PI * 2);
       ctx!.clip();
 
-      // Latitude lines
+      // Lat/Lon grid (subtle)
+      ctx!.strokeStyle = "rgba(120,160,240,0.09)";
+      ctx!.lineWidth = 0.5;
       for (let lat = -75; lat <= 75; lat += 15) {
         ctx!.beginPath();
         let first = true;
-        for (let lon = 0; lon <= 361; lon += 2) {
+        for (let lon = 0; lon <= 361; lon += 3) {
           const p = proj(lat, lon);
           if (p.z > 0) { first ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y); first = false; }
           else { first = true; }
         }
-        ctx!.strokeStyle = "rgba(120,160,240,0.12)";
-        ctx!.lineWidth = 0.6;
         ctx!.stroke();
       }
-
-      // Longitude lines
       for (let lon = 0; lon < 360; lon += 20) {
         ctx!.beginPath();
         let first = true;
-        for (let lat = -90; lat <= 90; lat += 2) {
+        for (let lat = -90; lat <= 90; lat += 3) {
           const p = proj(lat, lon);
           if (p.z > 0) { first ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y); first = false; }
           else { first = true; }
         }
-        ctx!.strokeStyle = "rgba(120,160,240,0.12)";
-        ctx!.lineWidth = 0.6;
         ctx!.stroke();
+      }
+
+      // --- Continents (filled landmasses) ---
+      for (const cont of CONTINENTS) {
+        const segments: { x: number; y: number }[][] = [];
+        let currentSeg: { x: number; y: number }[] = [];
+        for (const [lat, lon] of cont) {
+          const p = proj(lat, lon);
+          if (p.z > -0.02) {
+            currentSeg.push({ x: p.x, y: p.y });
+          } else if (currentSeg.length > 0) {
+            segments.push(currentSeg);
+            currentSeg = [];
+          }
+        }
+        if (currentSeg.length > 0) segments.push(currentSeg);
+
+        for (const seg of segments) {
+          if (seg.length < 2) continue;
+          ctx!.beginPath();
+          ctx!.moveTo(seg[0].x, seg[0].y);
+          for (let i = 1; i < seg.length; i++) ctx!.lineTo(seg[i].x, seg[i].y);
+          if (seg.length === cont.length) {
+            // Fully visible continent — fill it
+            ctx!.closePath();
+            ctx!.fillStyle = "rgba(75, 135, 90, 0.78)";
+            ctx!.fill();
+          }
+          ctx!.strokeStyle = "rgba(160, 220, 170, 0.85)";
+          ctx!.lineWidth = 1.1;
+          ctx!.stroke();
+        }
       }
 
       // --- Shipping routes ---
@@ -141,10 +169,10 @@ export default function GlobeCanvas({ cx: cxFactor = 0.5, cy: cyFactor = 0.5, ra
           if (p.z > -0.05) { first ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y); first = false; }
           else { first = true; }
         }
-        ctx!.strokeStyle = "rgba(80,200,255,0.22)";
-        ctx!.lineWidth = 1;
-        ctx!.shadowColor = "rgba(80,200,255,0.4)";
-        ctx!.shadowBlur = 4;
+        ctx!.strokeStyle = "rgba(255,215,120,0.55)";
+        ctx!.lineWidth = 1.3;
+        ctx!.shadowColor = "rgba(255,200,80,0.6)";
+        ctx!.shadowBlur = 6;
         ctx!.stroke();
         ctx!.shadowBlur = 0;
       });
@@ -152,17 +180,17 @@ export default function GlobeCanvas({ cx: cxFactor = 0.5, cy: cyFactor = 0.5, ra
       ctx!.restore();
 
       // --- Atmosphere glow ---
-      const atm = ctx!.createRadialGradient(px, py, R * 0.88, px, py, R * 1.12);
-      atm.addColorStop(0, "rgba(80,140,255,0.08)");
+      const atm = ctx!.createRadialGradient(px, py, R * 0.88, px, py, R * 1.14);
+      atm.addColorStop(0, "rgba(80,140,255,0.10)");
       atm.addColorStop(1, "transparent");
       ctx!.beginPath();
-      ctx!.arc(px, py, R * 1.12, 0, Math.PI * 2);
+      ctx!.arc(px, py, R * 1.14, 0, Math.PI * 2);
       ctx!.fillStyle = atm;
       ctx!.fill();
 
-      // Highlight arc (top-left specular)
+      // Specular highlight
       const spec = ctx!.createRadialGradient(px - R * 0.4, py - R * 0.4, 0, px - R * 0.3, py - R * 0.3, R * 0.6);
-      spec.addColorStop(0, "rgba(180,210,255,0.06)");
+      spec.addColorStop(0, "rgba(180,210,255,0.07)");
       spec.addColorStop(1, "transparent");
       ctx!.beginPath();
       ctx!.arc(px, py, R, 0, Math.PI * 2);
@@ -177,16 +205,16 @@ export default function GlobeCanvas({ cx: cxFactor = 0.5, cy: cyFactor = 0.5, ra
         const pulse = (Math.sin(frame * 0.028 + i * 0.9) + 1) / 2;
 
         ctx!.beginPath();
-        ctx!.arc(p.x, p.y, 5 + pulse * 7, 0, Math.PI * 2);
-        ctx!.strokeStyle = `rgba(201,164,82,${0.25 * pulse * bright})`;
-        ctx!.lineWidth = 1;
+        ctx!.arc(p.x, p.y, 5 + pulse * 8, 0, Math.PI * 2);
+        ctx!.strokeStyle = `rgba(201,164,82,${0.3 * pulse * bright})`;
+        ctx!.lineWidth = 1.2;
         ctx!.stroke();
 
         ctx!.beginPath();
-        ctx!.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(230,190,90,${0.6 + 0.4 * bright})`;
-        ctx!.shadowColor = "rgba(201,164,82,0.7)";
-        ctx!.shadowBlur = 6;
+        ctx!.arc(p.x, p.y, 2.8, 0, Math.PI * 2);
+        ctx!.fillStyle = `rgba(255,210,110,${0.75 + 0.25 * bright})`;
+        ctx!.shadowColor = "rgba(255,180,80,0.85)";
+        ctx!.shadowBlur = 10;
         ctx!.fill();
         ctx!.shadowBlur = 0;
       });
@@ -201,19 +229,19 @@ export default function GlobeCanvas({ cx: cxFactor = 0.5, cy: cyFactor = 0.5, ra
         const p = proj(lat, lon);
         if (p.z < 0) return;
 
-        const g = ctx!.createRadialGradient(p.x, p.y, 0, p.x, p.y, 7);
-        g.addColorStop(0, "rgba(160,230,255,0.75)");
+        const g = ctx!.createRadialGradient(p.x, p.y, 0, p.x, p.y, 8);
+        g.addColorStop(0, "rgba(200,240,255,0.85)");
         g.addColorStop(1, "transparent");
         ctx!.fillStyle = g;
         ctx!.beginPath();
-        ctx!.arc(p.x, p.y, 7, 0, Math.PI * 2);
+        ctx!.arc(p.x, p.y, 8, 0, Math.PI * 2);
         ctx!.fill();
 
         ctx!.beginPath();
-        ctx!.arc(p.x, p.y, 2, 0, Math.PI * 2);
-        ctx!.fillStyle = "rgba(200,240,255,0.95)";
-        ctx!.shadowColor = "rgba(150,220,255,0.8)";
-        ctx!.shadowBlur = 8;
+        ctx!.arc(p.x, p.y, 2.2, 0, Math.PI * 2);
+        ctx!.fillStyle = "rgba(220,245,255,1)";
+        ctx!.shadowColor = "rgba(150,220,255,0.9)";
+        ctx!.shadowBlur = 10;
         ctx!.fill();
         ctx!.shadowBlur = 0;
       });
