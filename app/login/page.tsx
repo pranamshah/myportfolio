@@ -53,8 +53,8 @@ export default function LoginPage() {
           style={{ background: "linear-gradient(to bottom, rgba(8,13,26,0.3) 0%, rgba(8,13,26,0.15) 50%, rgba(8,13,26,0.5) 100%)" }} />
 
         <div className="relative flex items-center gap-2.5">
-          <NavkarLogo variant="symbol" symbolSize={36} />
-          <NavkarLogo variant="wordmark" className="h-8 w-auto brightness-0 invert" />
+          <NavkarLogo variant="symbol" symbolSize={36} light />
+          <NavkarLogo variant="wordmark" light />
         </div>
 
         <div className="relative">

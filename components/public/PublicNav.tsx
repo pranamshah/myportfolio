@@ -32,8 +32,8 @@ export default function PublicNav() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <NavkarLogo variant="symbol" symbolSize={36} light={!scrolled} />
-          <NavkarLogo variant="wordmark" className="h-8 w-auto" light={!scrolled} />
+          <NavkarLogo variant="symbol" symbolSize={34} light={!scrolled} />
+          <NavkarLogo variant="wordmark" light={!scrolled} />
         </Link>
 
         {/* Desktop links */}

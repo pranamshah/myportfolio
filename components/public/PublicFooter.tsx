@@ -11,7 +11,7 @@ export default function PublicFooter() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <NavkarLogo variant="symbol" symbolSize={44} />
-              <NavkarLogo variant="wordmark" className="h-10 w-auto" />
+              <NavkarLogo variant="wordmark" />
             </div>
             <p className="text-sm text-gray-500 leading-relaxed max-w-xs mb-4">
               Navkar Impex is a Chennai-based freight forwarding agency. We coordinate sea freight,
