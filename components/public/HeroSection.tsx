@@ -55,7 +55,7 @@ export default function HeroSection() {
         <div className="max-w-[540px]">
 
           <span className="font-mono text-[11px] tracking-[0.22em] text-secondary mb-5 block uppercase">
-            Established 1994 · Chennai, India
+            Established 2026 · Chennai, India
           </span>
 
           <h1 className="font-display mb-12"
