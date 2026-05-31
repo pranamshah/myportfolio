@@ -5,9 +5,11 @@ import { useSession } from "next-auth/react";
 import NavkarLogo from "@/components/NavkarLogo";
 
 const NAV_LINKS = [
-  { label: "SERVICES", href: "#services" },
-  { label: "HOW IT WORKS", href: "#process" },
-  { label: "ABOUT", href: "#about" },
+  { label: "SEA",     href: "/sea-freight" },
+  { label: "AIR",     href: "/air-freight" },
+  { label: "CUSTOMS", href: "/customs" },
+  { label: "NETWORK", href: "/network" },
+  { label: "ABOUT",   href: "/about" },
 ];
 
 export default function PublicNav() {
@@ -40,10 +42,10 @@ export default function PublicNav() {
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-10">
           {NAV_LINKS.map(l => (
-            <a key={l.label} href={l.href}
+            <Link key={l.label} href={l.href}
               className="font-mono text-[11px] tracking-[0.12em] text-on-surface-variant hover:text-primary transition-colors">
               {l.label}
-            </a>
+            </Link>
           ))}
         </div>
 
@@ -79,11 +81,11 @@ export default function PublicNav() {
       {open && (
         <div className="md:hidden bg-surface border-t border-outline-variant px-5 py-6 space-y-4">
           {NAV_LINKS.map(l => (
-            <a key={l.label} href={l.href}
+            <Link key={l.label} href={l.href}
               className="block font-mono text-[11px] tracking-[0.12em] text-on-surface-variant hover:text-primary py-2"
               onClick={() => setOpen(false)}>
               {l.label}
-            </a>
+            </Link>
           ))}
           <div className="pt-4 border-t border-outline-variant flex flex-col gap-3">
             {session ? (
