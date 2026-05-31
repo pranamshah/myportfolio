@@ -10,6 +10,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Preload earth texture so it's in cache when Three.js initialises */}
+        <link rel="preload" as="image" href="/earth-day.jpg" />
+      </head>
       <body>
         <Providers>{children}</Providers>
       </body>

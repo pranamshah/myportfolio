@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useMemo, useEffect, useState, Suspense } from "react";
+import { useRef, useMemo, useEffect, Suspense } from "react";
 import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import * as THREE from "three";
@@ -82,13 +82,8 @@ function makeDotTexture(): THREE.Texture {
 }
 
 // ─── Earth surface: real NASA texture recolored to blue ocean + green land ────
-function EarthSurface({ onReady }: { onReady: () => void }) {
+function EarthSurface() {
   const tex = useLoader(THREE.TextureLoader, "/earth-day.jpg");
-  const notified = useRef(false);
-  useEffect(() => {
-    // useLoader suspends until the texture is resolved, so tex is fully loaded here
-    if (!notified.current) { notified.current = true; onReady(); }
-  }, [onReady]);
 
   const material = useMemo(() => {
     tex.colorSpace = THREE.SRGBColorSpace;
@@ -256,8 +251,8 @@ function RouteParticles({ dot }: { dot: THREE.Texture }) {
 }
 
 // ─── Scene ────────────────────────────────────────────────────────────────────
-interface SceneProps { cx: number; cy: number; onReady: () => void }
-function GlobeScene({ cx, cy, onReady }: SceneProps) {
+interface SceneProps { cx: number; cy: number }
+function GlobeScene({ cx, cy }: SceneProps) {
   const groupRef = useRef<THREE.Group>(null);
   const mouse    = useRef({ x: 0, y: 0 });
   const { viewport } = useThree();
@@ -290,7 +285,7 @@ function GlobeScene({ cx, cy, onReady }: SceneProps) {
       <pointLight position={[-5, 3.5, 4]} intensity={1.6} color={0xffffff} />
       <group ref={groupRef} position={[offX, offY, 0]} rotation={[0.22, 0, 0]}>
         <Suspense fallback={null}>
-          <EarthSurface onReady={onReady} />
+          <EarthSurface />
         </Suspense>
         <Atmosphere />
         <RouteLines />
@@ -304,14 +299,8 @@ function GlobeScene({ cx, cy, onReady }: SceneProps) {
 // ─── Public export ────────────────────────────────────────────────────────────
 interface Props { cx?: number; cy?: number; opacity?: number }
 export default function GlobeCanvas({ cx = 0.5, cy = 0.5, opacity = 1 }: Props) {
-  const [ready, setReady] = useState(false);
-
   return (
-    <div style={{
-      width: "100%", height: "100%",
-      opacity: ready ? opacity : 0,
-      transition: ready ? "opacity 1s ease-in" : "none",
-    }}>
+    <div style={{ width: "100%", height: "100%", opacity }}>
       <Canvas
         style={{ width: "100%", height: "100%" }}
         gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
@@ -320,7 +309,7 @@ export default function GlobeCanvas({ cx = 0.5, cy = 0.5, opacity = 1 }: Props) 
       >
         <Suspense fallback={null}>
           <Stars radius={130} depth={60} count={2600} factor={4} saturation={0} fade speed={0.35} />
-          <GlobeScene cx={cx} cy={cy} onReady={() => setReady(true)} />
+          <GlobeScene cx={cx} cy={cy} />
         </Suspense>
       </Canvas>
     </div>
