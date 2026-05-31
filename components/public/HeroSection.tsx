@@ -34,7 +34,7 @@ export default function HeroSection() {
 
       {/* ── Globe canvas (transparent bg, full section so stars fill space) ── */}
       <div className="absolute inset-0 pointer-events-none">
-        <GlobeCanvas cx={0.64} cy={0.50} radiusFactor={0.43} opacity={1} />
+        <GlobeCanvas cx={0.64} cy={0.50} opacity={1} />
       </div>
 
       {/* ── Left gradient: light bg → transparent so globe shows on right ── */}
