@@ -80,7 +80,7 @@ export default function LoginPage() {
 
         {/* Stats */}
         <div className="relative grid grid-cols-3 gap-3">
-          {[["500+", "CLIENTS"], ["CHA", "LICENSED"], ["1994", "EST."]].map(([v, l]) => (
+          {[["500+", "CLIENTS"], ["CHA", "LICENSED"], ["2026", "EST."]].map(([v, l]) => (
             <div key={l} className="p-4 text-center"
               style={{ border: "1px solid rgba(255,255,255,0.08)", backgroundColor: "rgba(255,255,255,0.04)" }}>
               <div className="font-display text-xl" style={{ color: "#fed65b", fontStyle: "italic" }}>{v}</div>

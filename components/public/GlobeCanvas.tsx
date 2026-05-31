@@ -367,25 +367,25 @@ function MovingVehicles({ dot, ship, plane }: VehicleProps) {
   // Ship sprite — illustrative boat icon, large enough to be clearly visible
   const shipSpriteMat = useMemo(() => new THREE.PointsMaterial({
     color: 0xffffff, size: 0.15, map: ship, transparent: true,
-    blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, sizeAttenuation: true,
+    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
   }), [ship]);
 
   // Ship wake trail
   const shipTrailMat = useMemo(() => new THREE.PointsMaterial({
     color: 0x9fe6ff, size: 0.032, map: dot, transparent: true, opacity: 0.55,
-    blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, sizeAttenuation: true,
+    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
   }), [dot]);
 
   // Plane sprite — illustrative aircraft icon, large and bright
   const planeSpriteMat = useMemo(() => new THREE.PointsMaterial({
     color: 0xffffff, size: 0.19, map: plane, transparent: true,
-    blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, sizeAttenuation: true,
+    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
   }), [plane]);
 
   // Plane contrail
   const planeTrailMat = useMemo(() => new THREE.PointsMaterial({
     color: 0xaaddff, size: 0.038, map: dot, transparent: true, opacity: 0.50,
-    blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, sizeAttenuation: true,
+    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
   }), [dot]);
 
   const shipSpriteObj  = useMemo(() => new THREE.Points(shipSpriteGeom,  shipSpriteMat),  [shipSpriteGeom,  shipSpriteMat]);

@@ -2,7 +2,7 @@ const STATS = [
   { label: "FREIGHT MODES", value: "SEA & AIR" },
   { label: "CLEARANCE", value: "CHA COORDINATED" },
   { label: "BASE PORT", value: "CHENNAI" },
-  { label: "ESTABLISHED", value: "SINCE 1994" },
+  { label: "ESTABLISHED", value: "SINCE 2026" },
 ];
 
 const WHY = [
