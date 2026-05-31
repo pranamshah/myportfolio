@@ -81,96 +81,6 @@ function makeDotTexture(): THREE.Texture {
   return t;
 }
 
-// Top-view ship silhouette: pointed bow, rectangular hull, bridge
-function makeShipTexture(): THREE.Texture {
-  const s = 128, cx = 64, cy = 64;
-  const c = document.createElement("canvas");
-  c.width = c.height = s;
-  const g = c.getContext("2d")!;
-  g.clearRect(0, 0, s, s);
-
-  // Glow halo
-  const halo = g.createRadialGradient(cx, cy, 6, cx, cy, 44);
-  halo.addColorStop(0,   "rgba(120, 200, 255, 0.55)");
-  halo.addColorStop(1,   "rgba(30,  100, 220, 0)");
-  g.fillStyle = halo;
-  g.fillRect(0, 0, s, s);
-
-  // Hull
-  g.fillStyle = "rgba(200, 235, 255, 0.96)";
-  g.beginPath();
-  g.moveTo(cx,      20);   // bow tip
-  g.lineTo(cx + 16, 40);   // right shoulder
-  g.lineTo(cx + 16, 92);   // right stern
-  g.lineTo(cx - 16, 92);   // left stern
-  g.lineTo(cx - 16, 40);   // left shoulder
-  g.closePath();
-  g.fill();
-
-  // Superstructure / bridge
-  g.fillStyle = "rgba(255,255,255,1)";
-  g.fillRect(cx - 9, 48, 18, 20);
-
-  // Funnel dot
-  g.beginPath();
-  g.arc(cx, 54, 4, 0, Math.PI * 2);
-  g.fillStyle = "rgba(255,220,100,0.9)";
-  g.fill();
-
-  const t = new THREE.CanvasTexture(c);
-  t.needsUpdate = true;
-  return t;
-}
-
-// Top-view airplane: fuselage + swept wings + tail fins
-function makePlaneTexture(): THREE.Texture {
-  const s = 128, cx = 64, cy = 64;
-  const c = document.createElement("canvas");
-  c.width = c.height = s;
-  const g = c.getContext("2d")!;
-  g.clearRect(0, 0, s, s);
-
-  // Glow halo
-  const halo = g.createRadialGradient(cx, cy, 6, cx, cy, 50);
-  halo.addColorStop(0,   "rgba(160, 210, 255, 0.5)");
-  halo.addColorStop(1,   "rgba(60,  140, 255, 0)");
-  g.fillStyle = halo;
-  g.fillRect(0, 0, s, s);
-
-  g.fillStyle = "rgba(255,255,255,0.97)";
-
-  // Fuselage
-  g.beginPath();
-  g.ellipse(cx, cy, 5, 30, 0, 0, Math.PI * 2);
-  g.fill();
-
-  // Main wings (swept)
-  g.beginPath();
-  g.moveTo(cx,      cy - 4);
-  g.lineTo(cx - 46, cy + 12);
-  g.lineTo(cx - 34, cy + 18);
-  g.lineTo(cx,      cy + 6);
-  g.lineTo(cx + 34, cy + 18);
-  g.lineTo(cx + 46, cy + 12);
-  g.closePath();
-  g.fill();
-
-  // Tail fins
-  g.beginPath();
-  g.moveTo(cx,      cy + 22);
-  g.lineTo(cx - 18, cy + 36);
-  g.lineTo(cx - 12, cy + 40);
-  g.lineTo(cx,      cy + 28);
-  g.lineTo(cx + 12, cy + 40);
-  g.lineTo(cx + 18, cy + 36);
-  g.closePath();
-  g.fill();
-
-  const t = new THREE.CanvasTexture(c);
-  t.needsUpdate = true;
-  return t;
-}
-
 // ─── Earth surface: real NASA texture recolored to blue ocean + green land ────
 function EarthSurface() {
   const tex = useLoader(THREE.TextureLoader, "/earth-day.jpg");
@@ -340,99 +250,6 @@ function RouteParticles({ dot }: { dot: THREE.Texture }) {
   return <><primitive object={seaObj} /><primitive object={airObj} /></>;
 }
 
-// ─── Ships on sea routes + planes on air routes ───────────────────────────────
-interface VehicleProps { dot: THREE.Texture; ship: THREE.Texture; plane: THREE.Texture }
-const SHIP_TRAIL = 14, PLANE_TRAIL = 30;
-
-function MovingVehicles({ dot, ship, plane }: VehicleProps) {
-  const seaCurves = useMemo(() => SEA_ROUTES.map(([ai, bi]) => {
-    const c = new THREE.CatmullRomCurve3(arcPoints(PORTS[ai].lat, PORTS[ai].lon, PORTS[bi].lat, PORTS[bi].lon, 80, 0.045));
-    c.arcLengthDivisions = 150; return c;
-  }), []);
-  const airCurves = useMemo(() => AIR_ROUTES.map(([ai, bi]) => {
-    const c = new THREE.CatmullRomCurve3(arcPoints(PORTS[ai].lat, PORTS[ai].lon, PORTS[bi].lat, PORTS[bi].lon, 80, 0.07));
-    c.arcLengthDivisions = 150; return c;
-  }), []);
-
-  const ships  = useRef(SEA_ROUTES.map(() => ({ t: Math.random(), spd: 0.010 + Math.random() * 0.006 })));
-  const planes = useRef(AIR_ROUTES.map(() => ({ t: Math.random(), spd: 0.026 + Math.random() * 0.016 })));
-
-  const mk = (n: number) => { const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(n * 3), 3)); return g; };
-
-  const shipSpriteGeom = useMemo(() => mk(SEA_ROUTES.length), []);
-  const shipTrailGeom  = useMemo(() => mk(SEA_ROUTES.length * SHIP_TRAIL), []);
-  const planeSpriteGeom = useMemo(() => mk(AIR_ROUTES.length), []);
-  const planeTrailGeom  = useMemo(() => mk(AIR_ROUTES.length * PLANE_TRAIL), []);
-
-  // Ship sprite — illustrative boat icon, large enough to be clearly visible
-  const shipSpriteMat = useMemo(() => new THREE.PointsMaterial({
-    color: 0xffffff, size: 0.15, map: ship, transparent: true,
-    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
-  }), [ship]);
-
-  // Ship wake trail
-  const shipTrailMat = useMemo(() => new THREE.PointsMaterial({
-    color: 0x9fe6ff, size: 0.032, map: dot, transparent: true, opacity: 0.55,
-    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
-  }), [dot]);
-
-  // Plane sprite — illustrative aircraft icon, large and bright
-  const planeSpriteMat = useMemo(() => new THREE.PointsMaterial({
-    color: 0xffffff, size: 0.19, map: plane, transparent: true,
-    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
-  }), [plane]);
-
-  // Plane contrail
-  const planeTrailMat = useMemo(() => new THREE.PointsMaterial({
-    color: 0xaaddff, size: 0.038, map: dot, transparent: true, opacity: 0.50,
-    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
-  }), [dot]);
-
-  const shipSpriteObj  = useMemo(() => new THREE.Points(shipSpriteGeom,  shipSpriteMat),  [shipSpriteGeom,  shipSpriteMat]);
-  const shipTrailObj   = useMemo(() => new THREE.Points(shipTrailGeom,   shipTrailMat),   [shipTrailGeom,   shipTrailMat]);
-  const planeSpriteObj = useMemo(() => new THREE.Points(planeSpriteGeom, planeSpriteMat), [planeSpriteGeom, planeSpriteMat]);
-  const planeTrailObj  = useMemo(() => new THREE.Points(planeTrailGeom,  planeTrailMat),  [planeTrailGeom,  planeTrailMat]);
-
-  useFrame((_, delta) => {
-    const sd = shipSpriteGeom.getAttribute("position")  as THREE.BufferAttribute;
-    const st = shipTrailGeom.getAttribute("position")   as THREE.BufferAttribute;
-    const pd = planeSpriteGeom.getAttribute("position") as THREE.BufferAttribute;
-    const pt = planeTrailGeom.getAttribute("position")  as THREE.BufferAttribute;
-
-    ships.current.forEach((s, i) => {
-      s.t = (s.t + s.spd * delta) % 1;
-      const p = seaCurves[i].getPointAt(s.t).multiplyScalar(1.013);
-      sd.setXYZ(i, p.x, p.y, p.z);
-      for (let tr = 0; tr < SHIP_TRAIL; tr++) {
-        const tp = seaCurves[i].getPointAt(((s.t - (tr + 1) * 0.006) % 1 + 1) % 1).multiplyScalar(1.013);
-        st.setXYZ(i * SHIP_TRAIL + tr, tp.x, tp.y, tp.z);
-      }
-    });
-
-    planes.current.forEach((s, i) => {
-      s.t = (s.t + s.spd * delta) % 1;
-      const p = airCurves[i].getPointAt(s.t);
-      pd.setXYZ(i, p.x, p.y, p.z);
-      for (let tr = 0; tr < PLANE_TRAIL; tr++) {
-        const tp = airCurves[i].getPointAt(((s.t - (tr + 1) * 0.005) % 1 + 1) % 1);
-        pt.setXYZ(i * PLANE_TRAIL + tr, tp.x, tp.y, tp.z);
-      }
-    });
-
-    sd.needsUpdate = true; st.needsUpdate = true;
-    pd.needsUpdate = true; pt.needsUpdate = true;
-  });
-
-  return (
-    <>
-      <primitive object={shipTrailObj} />
-      <primitive object={shipSpriteObj} />
-      <primitive object={planeTrailObj} />
-      <primitive object={planeSpriteObj} />
-    </>
-  );
-}
-
 // ─── Scene ────────────────────────────────────────────────────────────────────
 interface SceneProps { cx: number; cy: number }
 function GlobeScene({ cx, cy }: SceneProps) {
@@ -440,9 +257,7 @@ function GlobeScene({ cx, cy }: SceneProps) {
   const mouse    = useRef({ x: 0, y: 0 });
   const { viewport } = useThree();
 
-  const dot   = useMemo(() => makeDotTexture(),   []);
-  const ship  = useMemo(() => makeShipTexture(),  []);
-  const plane = useMemo(() => makePlaneTexture(), []);
+  const dot = useMemo(() => makeDotTexture(), []);
 
   const offX =  (cx - 0.5) * viewport.width;
   const offY = -(cy - 0.5) * viewport.height;
@@ -476,7 +291,6 @@ function GlobeScene({ cx, cy }: SceneProps) {
         <RouteLines />
         <PortMarkers dot={dot} />
         <RouteParticles dot={dot} />
-        <MovingVehicles dot={dot} ship={ship} plane={plane} />
       </group>
     </>
   );
