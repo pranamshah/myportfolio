@@ -7,7 +7,7 @@ export default async function ClientLayout({ children }: { children: React.React
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "CLIENT") redirect("/login");
   return (
-    <div className="flex min-h-screen bg-surface-deep">
+    <div className="flex min-h-screen bg-surface">
       <ClientSidebar />
       <main className="flex-1 overflow-x-hidden">
         {children}
