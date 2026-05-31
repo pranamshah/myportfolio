@@ -1,15 +1,15 @@
 const STATS = [
   { label: "FREIGHT MODES", value: "SEA & AIR" },
-  { label: "CERTIFICATION", value: "CHA LICENSED" },
-  { label: "OPERATIONS", value: "CHENNAI PORT" },
+  { label: "CLEARANCE", value: "CHA COORDINATED" },
+  { label: "BASE PORT", value: "CHENNAI" },
   { label: "ESTABLISHED", value: "SINCE 1994" },
 ];
 
 const WHY = [
-  { title: "Full-Service Freight", desc: "Sea freight, air freight, and inland transport — all under one roof, managed end to end." },
-  { title: "Real-Time Tracking", desc: "Live shipment status at every milestone through your secure client portal." },
-  { title: "Transparent Billing", desc: "Detailed invoices with itemised charges — no surprises, no hidden fees." },
-  { title: "Dedicated Support", desc: "One point of contact for all logistics queries — always available when you need us." },
+  { title: "Full-Service Freight", desc: "Sea freight, air freight, and door-to-door delivery managed under one roof — end to end." },
+  { title: "Real-Time Tracking", desc: "Live shipment status at every milestone — vessel, port, customs — in your secure portal." },
+  { title: "Transparent Billing", desc: "Itemised invoices with no hidden fees. Full visibility into every charge before it's raised." },
+  { title: "CHA Coordination", desc: "We coordinate customs clearance through trusted licensed CHA partners for smooth port handling." },
 ];
 
 export default function StatsSection() {

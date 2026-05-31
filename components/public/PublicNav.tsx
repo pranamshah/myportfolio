@@ -5,9 +5,8 @@ import { useSession } from "next-auth/react";
 import NavkarLogo from "@/components/NavkarLogo";
 
 const NAV_LINKS = [
-  { label: "SEA", href: "#services" },
-  { label: "AIR", href: "#services" },
-  { label: "CUSTOMS", href: "#services" },
+  { label: "SERVICES", href: "#services" },
+  { label: "HOW IT WORKS", href: "#process" },
   { label: "ABOUT", href: "#about" },
 ];
 
@@ -32,21 +31,17 @@ export default function PublicNav() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          <div className="flex items-center gap-2">
-            <NavkarLogo variant="symbol" symbolSize={28} />
-            <NavkarLogo variant="wordmark" className="h-5 w-auto" />
+          <div className="flex items-center gap-2.5">
+            <NavkarLogo variant="symbol" symbolSize={38} />
+            <NavkarLogo variant="wordmark" className="h-8 w-auto" />
           </div>
         </Link>
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-10">
-          {NAV_LINKS.map((l, i) => (
+          {NAV_LINKS.map(l => (
             <a key={l.label} href={l.href}
-              className={`font-mono text-[11px] tracking-[0.12em] transition-colors ${
-                i === 0
-                  ? "text-primary border-b border-secondary pb-0.5 font-bold"
-                  : "text-on-surface-variant hover:text-primary"
-              }`}>
+              className="font-mono text-[11px] tracking-[0.12em] text-on-surface-variant hover:text-primary transition-colors">
               {l.label}
             </a>
           ))}
