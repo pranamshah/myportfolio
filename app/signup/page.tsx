@@ -7,10 +7,10 @@ import Link from "next/link";
 import NavkarLogo from "@/components/NavkarLogo";
 
 const CLIENT_IMG =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuBdXiAjl_EjpNF8lnYDuwBokv1R2XjMewOQp3Ldz-NwyvHF2yH3p6kM8BPQWrOV9sZLB6MiqdwsvGzw7xlVdoMy6uKwjekypdZGPmKwNKvT04zALg_EfDELX-IYoiJbDMgraxcTbAzCl_Cf_9bmRRihtX7ZuKp6Z9bVwoYRBGy5e4Iqn85e5_vhEuEwdyn5-YMZc_6wzioC-5Tf-uewInXHmX-o0IWUQbK75b1AncUC9Tdz1em860Ypo4JI_7Dl2yuVhxCqolpU5A";
+  "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?w=600&fit=crop&q=80";
 
 const BUSINESS_IMG =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDhR2lpaWCELavN4mNvTfLR-EOiuTMEohPcG37TcCtSodOHd-lG1VpchUgsstMaJIUYqyU0AMZ9iPd7xG1OxLNhc5x81D2_VJnR3Ieqnt_a0-6gkijVwhyrizoAd13bOs9jYQ_8iQjUzIY-8yMwA0OM5FMTPHbaxnBofOt1xzhYAsPqSe4m5rnUDvP0UywhcJVdbEAc3hpNmsmmKeKqUzihZxB_mKW64osZyuXke3qhn0M5Dpq5NGgO__y3pfOgiThUDtzEAfXD3g";
+  "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&fit=crop&q=80";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -88,12 +88,12 @@ export default function SignupPage() {
           backdropFilter: "blur(12px)",
           borderBottom: "1px solid rgba(198,198,205,0.3)",
         }}>
-        <Link href="/" className="flex items-center gap-2.5">
-          <NavkarLogo variant="symbol" symbolSize={28} />
-          <NavkarLogo variant="wordmark" className="h-5 w-auto" />
+        <Link href="/" className="flex items-center gap-3">
+          <NavkarLogo variant="symbol" symbolSize={40} />
+          <NavkarLogo variant="wordmark" className="h-9 w-auto" />
         </Link>
         <div className="hidden md:flex items-center gap-8">
-          {["SEA", "AIR", "CUSTOMS", "TRACKING", "ABOUT"].map(l => (
+          {["SEA", "AIR", "TRACKING", "ABOUT"].map(l => (
             <a
               key={l}
               href={`/#${l.toLowerCase()}`}
@@ -332,9 +332,9 @@ export default function SignupPage() {
                   ) : (
                     <p className="font-sans text-sm text-on-surface-variant leading-relaxed max-w-md">
                       By creating an account you agree to our{" "}
-                      <a href="#" className="text-primary underline underline-offset-4 decoration-1">Terms of Service</a>
+                      <Link href="/terms" className="text-primary underline underline-offset-4 decoration-1">Terms of Service</Link>
                       {" "}and{" "}
-                      <a href="#" className="text-primary underline underline-offset-4 decoration-1">Privacy Policy</a>.
+                      <Link href="/privacy" className="text-primary underline underline-offset-4 decoration-1">Privacy Policy</Link>.
                     </p>
                   )}
                 </div>
@@ -396,24 +396,24 @@ export default function SignupPage() {
             <span className="font-mono text-[11px] tracking-[0.1em]" style={{ color: "#735c00" }}>
               NETWORK
             </span>
-            <a href="#" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
+            <Link href="/network" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
               GLOBAL NETWORK
-            </a>
-            <a href="#" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
+            </Link>
+            <Link href="/network#careers" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
               CAREERS
-            </a>
+            </Link>
           </div>
 
           <div className="md:col-span-3 flex flex-col gap-4">
             <span className="font-mono text-[11px] tracking-[0.1em]" style={{ color: "#735c00" }}>
               LEGAL
             </span>
-            <a href="#" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
+            <Link href="/privacy" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
               PRIVACY
-            </a>
-            <a href="#" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
+            </Link>
+            <Link href="/terms" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
               TERMS
-            </a>
+            </Link>
           </div>
 
           <div

@@ -8,7 +8,7 @@ import NavkarLogo from "@/components/NavkarLogo";
 /* eslint-disable @next/next/no-img-element */
 
 const HERO_IMG =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuAGkih-PqHZHYF2mGG821s4OofNLTZFDRHw06ApRC3lNMSe0veiUjAYS5egcXweBrp2y_h_l6jL5HSOIDK0zhjYKZVjp4fYTHadvOTeyH-wpQmzS-LAc23Q57gdCLplQuELdrYBsoU0vtv8QM67jXeWtmavOKJzH4x7BUeU26KeMW1MuETKFJE5IKX0Kwah5oz5jgMhm1z9vSw7uy4zl9ytyYLz7L_cMmChQQLyPOD6sI_UwSNNLjgdxqj1Gxr0ivUQaqcIY5XxDg";
+  "https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=900&fit=crop&q=80";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,21 +50,13 @@ export default function LoginPage() {
     }
   }
 
-  function quickLogin(role: "admin" | "client") {
-    const creds = {
-      admin:  { email: "admin@navkarimpex.com",  password: "Admin@12345"  },
-      client: { email: "client@navkarimpex.com", password: "Client@12345" },
-    };
-    login(undefined, creds[role].email, creds[role].password);
-  }
-
   return (
     <main className="min-h-screen w-full flex flex-col md:flex-row overflow-hidden">
 
       {/* ── Logo — fixed top-left ── */}
-      <div className="fixed top-8 left-6 md:top-10 md:left-10 z-50 flex items-center gap-2.5">
-        <NavkarLogo variant="symbol" symbolSize={28} />
-        <NavkarLogo variant="wordmark" className="h-5 w-auto" />
+      <div className="fixed top-6 left-6 md:top-8 md:left-10 z-50 flex items-center gap-3">
+        <NavkarLogo variant="symbol" symbolSize={40} />
+        <NavkarLogo variant="wordmark" className="h-9 w-auto" />
       </div>
 
       {/* ── Left visual side: 3/5 width ── */}
@@ -79,7 +71,7 @@ export default function LoginPage() {
           <span
             className="font-display font-bold"
             style={{ fontSize: "clamp(160px, 18vw, 320px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
-            LOGISTICS
+            NAVKAR
           </span>
         </div>
 
@@ -120,9 +112,9 @@ export default function LoginPage() {
         <div className="max-w-[380px] w-full mx-auto md:mx-0">
 
           {/* Mobile logo */}
-          <div className="flex md:hidden items-center gap-2 mb-10 mt-20">
-            <NavkarLogo variant="symbol" symbolSize={26} />
-            <NavkarLogo variant="wordmark" className="h-5 w-auto" />
+          <div className="flex md:hidden items-center gap-3 mb-10 mt-24">
+            <NavkarLogo variant="symbol" symbolSize={40} />
+            <NavkarLogo variant="wordmark" className="h-9 w-auto" />
           </div>
 
           {/* Heading */}
@@ -223,22 +215,6 @@ export default function LoginPage() {
               </button>
             </div>
           </form>
-
-          {/* Demo quick access */}
-          <div className="mt-6 flex items-center gap-3">
-            <span className="font-mono text-[9px] tracking-widest text-on-surface-variant/40 uppercase">Demo</span>
-            <button
-              onClick={() => quickLogin("admin")} disabled={loading}
-              className="font-mono text-[9px] tracking-widest text-on-surface-variant/60 hover:text-primary transition-colors disabled:opacity-40 underline underline-offset-2 decoration-dotted">
-              Business
-            </button>
-            <span className="text-outline-variant/50 text-xs">·</span>
-            <button
-              onClick={() => quickLogin("client")} disabled={loading}
-              className="font-mono text-[9px] tracking-widest text-on-surface-variant/60 hover:text-primary transition-colors disabled:opacity-40 underline underline-offset-2 decoration-dotted">
-              Client
-            </button>
-          </div>
 
           {/* Footer */}
           <footer
