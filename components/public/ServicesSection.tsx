@@ -38,7 +38,11 @@ const SERVICES = [
 
 export default function ServicesSection() {
   return (
-    <section id="services" className="pt-32 pb-36 px-5 md:px-20 bg-surface-container-lowest">
+    <section id="services" className="relative pt-32 pb-36 px-5 md:px-20 bg-surface-container-lowest overflow-hidden">
+      {/* Faint globe shadow — suggests the globe from the hero continues behind */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: "radial-gradient(ellipse 65% 55% at 82% 0%, rgba(30,80,180,0.07) 0%, rgba(20,60,140,0.03) 55%, transparent 72%)",
+      }} />
       <div className="max-w-[1440px] mx-auto">
 
         {/* Section header */}

@@ -24,11 +24,11 @@ export default function HeroSection() {
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden"
       style={{ backgroundColor: "#f5f6f8" }}>
 
-      {/* ── Dark space backdrop on the right (makes globe look premium) ── */}
+      {/* ── Dark space backdrop around the globe (fades at top to avoid dark corner) ── */}
       <div className="absolute inset-y-0 right-0 w-[72%] pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at 68% 50%, rgba(4,10,30,0.97) 0%, rgba(4,10,30,0.92) 22%, rgba(4,10,30,0.75) 44%, rgba(4,10,30,0.35) 63%, transparent 80%)",
+            "radial-gradient(ellipse at 80% 62%, rgba(4,10,30,0.95) 0%, rgba(4,10,30,0.88) 20%, rgba(4,10,30,0.62) 38%, rgba(4,10,30,0.18) 56%, transparent 70%)",
         }}
       />
 
