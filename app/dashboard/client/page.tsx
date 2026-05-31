@@ -37,7 +37,7 @@ export default async function ClientDashboard() {
     await Promise.all([
       Shipment.countDocuments({ client: clientId, status: { $nin: ["DELIVERED", "COMPLETED"] } }),
       Shipment.countDocuments({ client: clientId, status: { $in: ["DELIVERED", "COMPLETED"] } }),
-      Invoice.find({ client: clientId }).select("invoiceNumber totalAmount amountPaid status dueDate").lean(),
+      Invoice.find({ client: clientId }).select("invoiceNo totalAmount amountPaid status dueDate").lean(),
       (Document as any).find({ client: clientId }).sort({ createdAt: -1 }).limit(3).lean().catch(() => []),
       Shipment.find({ client: clientId })
         .sort({ updatedAt: -1 })
@@ -48,7 +48,7 @@ export default async function ClientDashboard() {
 
   type RecentShip = { _id: string; shipmentId: string; jobNumber?: string; description: string; status: string; origin: string; destination: string; eta?: Date; mode?: string; updatedAt: Date };
   type RecentDoc = { _id: string; name: string; type: string; createdAt: Date };
-  type Inv = { _id: string; invoiceNumber: string; totalAmount: number; amountPaid: number; status: string; dueDate?: Date };
+  type Inv = { _id: string; invoiceNo: string; totalAmount: number; amountPaid: number; status: string; dueDate?: Date };
 
   const ships = recentShipmentsDocs as unknown as RecentShip[];
   const docs   = recentDocs as unknown as RecentDoc[];
@@ -143,17 +143,14 @@ export default async function ClientDashboard() {
           ].map((card, i) => (
             <div
               key={i}
-              className="p-8 group transition-all duration-200"
+              className={`p-8 group transition-all duration-200 ${card.dark ? "border border-outline-variant/20" : "border border-outline-variant hover:border-primary"}`}
               style={{
                 backgroundColor: card.dark ? "#000000" : "#ffffff",
-                border: "1px solid #e2e2e2",
                 height: "160px",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
-              }}
-              onMouseEnter={e => { if (!card.dark) (e.currentTarget as HTMLElement).style.borderColor = "#000000"; }}
-              onMouseLeave={e => { if (!card.dark) (e.currentTarget as HTMLElement).style.borderColor = "#e2e2e2"; }}>
+              }}>
               <span className="font-mono text-[11px] tracking-widest uppercase" style={{ color: card.dark ? "rgba(255,255,255,0.6)" : "#45464d" }}>
                 {card.label}
               </span>
@@ -245,10 +242,7 @@ export default async function ClientDashboard() {
                     return (
                       <tr
                         key={row._id ?? i}
-                        className="border-b border-outline-variant/10 transition-colors"
-                        style={{ cursor: "pointer" }}
-                        onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = "#fafafa"}
-                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = "transparent"}>
+                        className="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors cursor-pointer">
                         <td className="px-6 py-4 font-mono text-[12px] font-bold">{row.jobNumber}</td>
                         <td className="px-6 py-4 font-sans text-sm text-on-surface-variant">
                           {row.origin.split(",")[0].toUpperCase()} → {row.destination.split(",")[0].toUpperCase()}
@@ -308,10 +302,7 @@ export default async function ClientDashboard() {
                 ].slice(0, 3).map((d, i) => (
                   <li
                     key={i}
-                    className="group flex items-center justify-between p-4 bg-white cursor-pointer transition-all"
-                    style={{ border: "1px solid #e2e2e2" }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "#000000"}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "#e2e2e2"}>
+                    className="group flex items-center justify-between p-4 bg-white cursor-pointer transition-all border border-outline-variant hover:border-primary">
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-[20px] text-on-surface-variant/60">description</span>
                       <div>
@@ -342,11 +333,11 @@ export default async function ClientDashboard() {
               </div>
               <div className="space-y-3">
                 {(pendingInvs.length > 0 ? pendingInvs : [
-                  { _id: "p1", invoiceNumber: "INV-2026-001", totalAmount: 18880, amountPaid: 0, status: "PENDING", dueDate: undefined },
+                  { _id: "p1", invoiceNo: "INV-2026-001", totalAmount: 18880, amountPaid: 0, status: "PENDING", dueDate: undefined },
                 ]).slice(0, 2).map(inv => (
                   <div key={String(inv._id)} className="flex justify-between items-center p-4" style={{ backgroundColor: "#f3f3f4" }}>
                     <div>
-                      <p className="font-mono text-[12px] font-bold text-on-surface">{inv.invoiceNumber}</p>
+                      <p className="font-mono text-[12px] font-bold text-on-surface">{inv.invoiceNo}</p>
                       <p className="font-mono text-[10px] tracking-widest text-on-surface-variant/60 uppercase mt-0.5">
                         {inv.dueDate ? `Due ${formatDate(inv.dueDate)}` : "Awaiting payment"}
                       </p>
