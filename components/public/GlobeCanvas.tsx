@@ -272,7 +272,7 @@ function RouteLines() {
         sp.push(pts[i].x, pts[i].y, pts[i].z, pts[i+1].x, pts[i+1].y, pts[i+1].z);
     }
     for (const [ai, bi] of AIR_ROUTES) {
-      const pts = arcPoints(PORTS[ai].lat, PORTS[ai].lon, PORTS[bi].lat, PORTS[bi].lon, 80, 0.18);
+      const pts = arcPoints(PORTS[ai].lat, PORTS[ai].lon, PORTS[bi].lat, PORTS[bi].lon, 80, 0.07);
       for (let i = 0; i < pts.length - 1; i++)
         ap.push(pts[i].x, pts[i].y, pts[i].z, pts[i+1].x, pts[i+1].y, pts[i+1].z);
     }
@@ -281,7 +281,7 @@ function RouteLines() {
       g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
       return new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color, opacity, transparent: true }));
     };
-    return { seaObj: mk(sp, 0xffd277, 0.34), airObj: mk(ap, 0x55ddff, 0.30) };
+    return { seaObj: mk(sp, 0xffd277, 0.45), airObj: mk(ap, 0x55ddff, 0.42) };
   }, []);
   return <><primitive object={seaObj} /><primitive object={airObj} /></>;
 }
@@ -316,7 +316,7 @@ function RouteParticles({ dot }: { dot: THREE.Texture }) {
       c.arcLengthDivisions = 100; return c;
     });
     const ac = AIR_ROUTES.map(([ai, bi]) => {
-      const c = new THREE.CatmullRomCurve3(arcPoints(PORTS[ai].lat, PORTS[ai].lon, PORTS[bi].lat, PORTS[bi].lon, 80, 0.18));
+      const c = new THREE.CatmullRomCurve3(arcPoints(PORTS[ai].lat, PORTS[ai].lon, PORTS[bi].lat, PORTS[bi].lon, 80, 0.07));
       c.arcLengthDivisions = 100; return c;
     });
     return {
@@ -350,7 +350,7 @@ function MovingVehicles({ dot, ship, plane }: VehicleProps) {
     c.arcLengthDivisions = 150; return c;
   }), []);
   const airCurves = useMemo(() => AIR_ROUTES.map(([ai, bi]) => {
-    const c = new THREE.CatmullRomCurve3(arcPoints(PORTS[ai].lat, PORTS[ai].lon, PORTS[bi].lat, PORTS[bi].lon, 80, 0.20));
+    const c = new THREE.CatmullRomCurve3(arcPoints(PORTS[ai].lat, PORTS[ai].lon, PORTS[bi].lat, PORTS[bi].lon, 80, 0.07));
     c.arcLengthDivisions = 150; return c;
   }), []);
 
