@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import GlobeCanvas from "./GlobeCanvas";
+import dynamic from "next/dynamic";
+
+// Three.js uses browser WebGL — must be client-only
+const GlobeCanvas = dynamic(() => import("./GlobeCanvas"), { ssr: false, loading: () => null });
 
 export default function HeroSection() {
   const watermarkRef = useRef<HTMLDivElement>(null);
@@ -18,23 +21,31 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex flex-col justify-center overflow-hidden canvas-bg"
-      style={{ backgroundColor: "#f9f9f9" }}>
+    <section className="relative min-h-screen flex flex-col justify-center overflow-hidden"
+      style={{ backgroundColor: "#f5f6f8" }}>
 
-      {/* Globe — full section, centered right */}
-      <div className="absolute inset-0">
-        <GlobeCanvas cx={0.64} cy={0.5} radiusFactor={0.43} opacity={1} />
-      </div>
-
-      {/* Gradient — solid left (text readable) → transparent right (globe visible) */}
-      <div className="absolute inset-0 pointer-events-none"
+      {/* ── Dark space backdrop on the right (makes globe look premium) ── */}
+      <div className="absolute inset-y-0 right-0 w-[72%] pointer-events-none"
         style={{
           background:
-            "linear-gradient(to right, #f9f9f9 0%, #f9f9f9 34%, rgba(249,249,249,0.88) 46%, rgba(249,249,249,0.35) 60%, transparent 74%)",
+            "radial-gradient(ellipse at 68% 50%, rgba(4,10,30,0.97) 0%, rgba(4,10,30,0.92) 22%, rgba(4,10,30,0.75) 44%, rgba(4,10,30,0.35) 63%, transparent 80%)",
         }}
       />
 
-      {/* Watermark — faint, behind text */}
+      {/* ── Globe canvas (transparent bg, full section so stars fill space) ── */}
+      <div className="absolute inset-0 pointer-events-none">
+        <GlobeCanvas cx={0.64} cy={0.50} radiusFactor={0.43} opacity={1} />
+      </div>
+
+      {/* ── Left gradient: light bg → transparent so globe shows on right ── */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to right, #f5f6f8 0%, #f5f6f8 28%, rgba(245,246,248,0.90) 40%, rgba(245,246,248,0.45) 52%, transparent 66%)",
+        }}
+      />
+
+      {/* ── Watermark ── */}
       <div ref={watermarkRef}
         className="watermark-text absolute top-1/2 left-0 -translate-y-1/2 select-none pointer-events-none"
         style={{
@@ -50,7 +61,7 @@ export default function HeroSection() {
         Navkar
       </div>
 
-      {/* Content — left side */}
+      {/* ── Text content — left side ── */}
       <div className="relative z-10 max-w-[1440px] mx-auto px-5 md:px-20 pt-28 pb-12 w-full">
         <div className="max-w-[540px]">
 
@@ -90,8 +101,8 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Scroll hint */}
-      <div className="absolute bottom-8 left-5 md:left-20 flex items-center gap-3 reveal reveal-delay-3 z-10">
+      {/* ── Scroll hint ── */}
+      <div className="absolute bottom-8 left-5 md:left-20 flex items-center gap-3 z-10">
         <div className="w-px h-10 bg-outline-variant" />
         <span className="font-mono text-[10px] tracking-[0.18em] text-on-surface-variant">SCROLL</span>
       </div>

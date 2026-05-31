@@ -31,9 +31,9 @@ export default function PublicNav() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          <div className="flex items-center gap-2.5">
-            <NavkarLogo variant="symbol" symbolSize={48} />
-            <NavkarLogo variant="wordmark" className="h-11 w-auto" />
+          <div className="flex items-center gap-3">
+            <NavkarLogo variant="symbol" symbolSize={72} />
+            <NavkarLogo variant="wordmark" className="h-16 w-auto" />
           </div>
         </Link>
 

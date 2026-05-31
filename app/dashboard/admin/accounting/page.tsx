@@ -102,7 +102,8 @@ export default function AccountingPage() {
     else alert(data.error || "Error saving ledger");
   }
 
-  const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tabs: { id: Tab; label: string; icon: React.ComponentType<any> }[] = [
     { id: "vouchers", label: "Vouchers", icon: BookOpen },
     { id: "ledgers", label: "Ledgers", icon: Scale },
     { id: "daybook", label: "Day Book", icon: Calendar },
