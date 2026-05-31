@@ -1,34 +1,54 @@
 const STEPS = [
-  { n: "01", title: "Request a Quote", desc: "Share cargo details and get a competitive quote within 2 hours." },
-  { n: "02", title: "Booking & Docs", desc: "We handle bookings, BL/AWB, and all customs documentation." },
-  { n: "03", title: "Live Tracking", desc: "Monitor every milestone — vessel, port, customs — in your portal." },
-  { n: "04", title: "Delivery", desc: "Expert clearance, duty coordination, and last-mile delivery." },
+  { n: "01", title: "REQUEST A QUOTE", desc: "Share cargo details — mode, weight, origin, destination. Get a competitive quote within 2 hours." },
+  { n: "02", title: "BOOKING & DOCS", desc: "We handle vessel/airline bookings, Bill of Lading, AWB, and all customs documentation." },
+  { n: "03", title: "LIVE TRACKING", desc: "Monitor every milestone — vessel ETA, port arrival, customs clearance — in your client portal." },
+  { n: "04", title: "DELIVERY", desc: "Expert customs clearance, duty coordination, and last-mile inland delivery to your doorstep." },
 ];
 
 export default function ProcessSection() {
   return (
-    <section id="process" className="py-24 bg-white">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-14">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A452] mb-3">How It Works</p>
-          <h2 className="font-display text-[clamp(1.8rem,3.5vw,3rem)] font-light text-gray-900 mb-3">
-            Simple & Transparent
-          </h2>
-          <div className="w-10 h-px bg-[#C9A452] mx-auto" />
+    <section id="process" className="py-36 px-5 md:px-20 bg-surface-container-low">
+      <div className="max-w-[1440px] mx-auto">
+
+        <div className="flex flex-col md:flex-row gap-20">
+          {/* Left: heading */}
+          <div className="md:w-80 flex-shrink-0 reveal">
+            <span className="font-mono text-[11px] tracking-[0.2em] text-secondary block mb-5 uppercase">
+              How It Works
+            </span>
+            <h2 className="font-display"
+              style={{
+                fontSize: "clamp(32px, 4vw, 52px)",
+                fontWeight: 600,
+                lineHeight: "1.15",
+                letterSpacing: "-0.02em",
+              }}>
+              Simple &amp;<br />Transparent.
+            </h2>
+            <div className="h-0.5 w-16 bg-secondary mt-6" />
+          </div>
+
+          {/* Right: steps */}
+          <div className="flex-1 relative">
+            {/* Connecting line */}
+            <div className="absolute left-7 top-4 bottom-4 w-px bg-outline-variant hidden md:block" />
+
+            <div className="space-y-10">
+              {STEPS.map(({ n, title, desc }, i) => (
+                <div key={n} className={`reveal reveal-delay-${i + 1} flex gap-8 items-start`}>
+                  <div className="flex-shrink-0 w-14 h-14 border border-outline-variant bg-surface flex items-center justify-center relative z-10">
+                    <span className="font-display text-lg text-secondary" style={{ fontStyle: "italic" }}>{n}</span>
+                  </div>
+                  <div className="pt-2">
+                    <h3 className="font-mono text-[11px] tracking-[0.12em] text-on-surface font-bold mb-2">{title}</h3>
+                    <p className="font-sans text-sm text-on-surface-variant leading-relaxed max-w-sm">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-8">
-          {STEPS.map(({ n, title, desc }) => (
-            <div key={n} className="text-center group">
-              <div className="w-14 h-14 rounded-full border-2 border-gray-200 flex items-center
-                              justify-center mx-auto mb-5 group-hover:border-[#C9A452]/40 transition-colors">
-                <span className="font-display text-xl font-light text-[#C9A452]">{n}</span>
-              </div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">{title}</h3>
-              <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

@@ -3,8 +3,6 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Building2, User } from "lucide-react";
-import GlobeCanvas from "@/components/public/GlobeCanvas";
 import NavkarLogo from "@/components/NavkarLogo";
 
 export default function SignupPage() {
@@ -43,7 +41,6 @@ export default function SignupPage() {
       });
 
       if (signInRes?.error) {
-        setError("Account created! Please sign in.");
         router.push("/login");
       } else {
         router.push(accountType === "business" ? "/dashboard/admin" : "/dashboard/client");
@@ -56,172 +53,135 @@ export default function SignupPage() {
     }
   }
 
+  const inputCls = "w-full border-0 border-b bg-transparent pb-2.5 text-sm text-on-surface placeholder-on-surface-variant/40 focus:outline-none transition-colors font-sans";
+  const inputStyle = { borderBottom: "1px solid #c6c6cd", borderRadius: 0 };
+  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderBottomColor = "#000000");
+  const onBlur  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderBottomColor = "#c6c6cd");
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative" style={{ background: "linear-gradient(160deg, #080d1a 0%, #0d1630 100%)" }}>
-      {/* Globe background */}
-      <div className="absolute inset-0">
-        <GlobeCanvas cx={0.5} cy={0.45} radiusFactor={0.38} opacity={0.7} />
-      </div>
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(8,13,26,0.6) 100%)" }} />
-      <div className="w-full max-w-lg relative z-10">
+    <div className="min-h-screen flex items-center justify-center canvas-bg py-12 px-5"
+      style={{ backgroundColor: "#f9f9f9" }}>
+      <div className="w-full max-w-lg">
 
         {/* Logo */}
-        <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 mb-8 mx-auto">
-          <NavkarLogo variant="symbol" symbolSize={34} />
-          <NavkarLogo variant="wordmark" className="h-7 w-auto" />
+        <div className="flex items-center gap-2 mb-10 justify-center">
+          <NavkarLogo variant="symbol" symbolSize={32} />
+          <NavkarLogo variant="wordmark" className="h-6 w-auto" />
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1 text-center">Create your account</h1>
-          <p className="text-sm text-gray-500 mb-8 text-center">Choose your account type to get started</p>
+        {/* Card */}
+        <div className="bg-white border border-outline-variant p-10 shadow-sm">
 
-          {/* Account Type Selector */}
+          <p className="font-mono text-[11px] tracking-[0.2em] mb-3 uppercase" style={{ color: "#735c00" }}>
+            New Account
+          </p>
+          <h1 className="font-display mb-2" style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 600, letterSpacing: "-0.02em" }}>
+            Create your account.
+          </h1>
+          <p className="font-sans text-sm text-on-surface-variant mb-8">Choose your account type to get started</p>
+
+          {/* Account type selector */}
           <div className="grid grid-cols-2 gap-3 mb-8">
-            <button
-              type="button"
-              onClick={() => setAccountType("business")}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                accountType === "business"
-                  ? "border-[#C9A452] bg-[#C9A452]/5"
-                  : "border-gray-200 bg-gray-50 hover:border-gray-300"
-              }`}
-            >
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${
-                accountType === "business" ? "bg-[#C9A452]/15" : "bg-gray-200"
-              }`}>
-                <Building2 size={18} className={accountType === "business" ? "text-[#C9A452]" : "text-gray-500"} />
-              </div>
-              <div className={`text-sm font-semibold mb-0.5 ${accountType === "business" ? "text-gray-900" : "text-gray-600"}`}>
-                Business
-              </div>
-              <div className="text-[11px] text-gray-400 leading-snug">
-                Manage shipments, invoices & clients
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setAccountType("client")}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                accountType === "client"
-                  ? "border-[#C9A452] bg-[#C9A452]/5"
-                  : "border-gray-200 bg-gray-50 hover:border-gray-300"
-              }`}
-            >
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${
-                accountType === "client" ? "bg-[#C9A452]/15" : "bg-gray-200"
-              }`}>
-                <User size={18} className={accountType === "client" ? "text-[#C9A452]" : "text-gray-500"} />
-              </div>
-              <div className={`text-sm font-semibold mb-0.5 ${accountType === "client" ? "text-gray-900" : "text-gray-600"}`}>
-                Client
-              </div>
-              <div className="text-[11px] text-gray-400 leading-snug">
-                Track cargo, view invoices & docs
-              </div>
-            </button>
+            {(["business", "client"] as const).map(type => (
+              <button key={type} type="button" onClick={() => setAccountType(type)}
+                className="p-4 text-left transition-all border-2"
+                style={{
+                  borderColor: accountType === type ? "#735c00" : "#c6c6cd",
+                  backgroundColor: accountType === type ? "rgba(115,92,0,0.03)" : "#fafafa",
+                }}>
+                <div className="w-8 h-8 flex items-center justify-center mb-3"
+                  style={{
+                    backgroundColor: accountType === type ? "rgba(115,92,0,0.1)" : "#eeeeee",
+                  }}>
+                  {type === "business" ? (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <rect x="1" y="5" width="14" height="10" stroke={accountType === "business" ? "#735c00" : "#76777d"} strokeWidth="1.5" fill="none"/>
+                      <path d="M5 5V3a3 3 0 016 0v2" stroke={accountType === "business" ? "#735c00" : "#76777d"} strokeWidth="1.5"/>
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <circle cx="8" cy="5" r="3" stroke={accountType === "client" ? "#735c00" : "#76777d"} strokeWidth="1.5"/>
+                      <path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke={accountType === "client" ? "#735c00" : "#76777d"} strokeWidth="1.5"/>
+                    </svg>
+                  )}
+                </div>
+                <div className="font-sans text-sm font-semibold mb-0.5 capitalize"
+                  style={{ color: accountType === type ? "#1a1c1c" : "#45464d" }}>
+                  {type}
+                </div>
+                <div className="font-sans text-[11px] text-on-surface-variant leading-snug">
+                  {type === "business" ? "Manage shipments, invoices & clients" : "Track cargo, view invoices & docs"}
+                </div>
+              </button>
+            ))}
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-5">
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Full Name *</label>
-                <input
-                  className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                             placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                             focus:border-[#C9A452]/50 bg-white transition-all"
-                  placeholder="John Doe" required
-                  value={form.name} onChange={e => set("name", e.target.value)}
-                />
+                <label className="block font-mono text-[10px] tracking-[0.12em] uppercase text-on-surface-variant mb-2">Full Name *</label>
+                <input className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur}
+                  placeholder="John Doe" required value={form.name} onChange={e => set("name", e.target.value)} />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Company *</label>
-                <input
-                  className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                             placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                             focus:border-[#C9A452]/50 bg-white transition-all"
-                  placeholder="ACME Pvt Ltd" required
-                  value={form.company} onChange={e => set("company", e.target.value)}
-                />
+                <label className="block font-mono text-[10px] tracking-[0.12em] uppercase text-on-surface-variant mb-2">Company *</label>
+                <input className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur}
+                  placeholder="ACME Pvt Ltd" required value={form.company} onChange={e => set("company", e.target.value)} />
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Email Address *</label>
-              <input
-                type="email"
-                className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                           placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                           focus:border-[#C9A452]/50 bg-white transition-all"
-                placeholder="you@company.com" required
-                value={form.email} onChange={e => set("email", e.target.value)}
-              />
+              <label className="block font-mono text-[10px] tracking-[0.12em] uppercase text-on-surface-variant mb-2">Email Address *</label>
+              <input type="email" className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur}
+                placeholder="you@company.com" required value={form.email} onChange={e => set("email", e.target.value)} />
             </div>
 
             <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Phone Number *</label>
-              <input
-                type="tel"
-                className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                           placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                           focus:border-[#C9A452]/50 bg-white transition-all"
-                placeholder="+91 98765 43210" required
-                value={form.phone} onChange={e => set("phone", e.target.value)}
-              />
+              <label className="block font-mono text-[10px] tracking-[0.12em] uppercase text-on-surface-variant mb-2">Phone Number *</label>
+              <input type="tel" className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur}
+                placeholder="+91 98765 43210" required value={form.phone} onChange={e => set("phone", e.target.value)} />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-5">
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Password *</label>
-                <input
-                  type="password"
-                  className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                             placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                             focus:border-[#C9A452]/50 bg-white transition-all"
-                  placeholder="Min 8 chars" required
-                  value={form.password} onChange={e => set("password", e.target.value)}
-                />
+                <label className="block font-mono text-[10px] tracking-[0.12em] uppercase text-on-surface-variant mb-2">Password *</label>
+                <input type="password" className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur}
+                  placeholder="Min 8 chars" required value={form.password} onChange={e => set("password", e.target.value)} />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Confirm *</label>
-                <input
-                  type="password"
-                  className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                             placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                             focus:border-[#C9A452]/50 bg-white transition-all"
-                  placeholder="Repeat" required
-                  value={form.confirm} onChange={e => set("confirm", e.target.value)}
-                />
+                <label className="block font-mono text-[10px] tracking-[0.12em] uppercase text-on-surface-variant mb-2">Confirm *</label>
+                <input type="password" className={inputCls} style={inputStyle} onFocus={onFocus} onBlur={onBlur}
+                  placeholder="Repeat" required value={form.confirm} onChange={e => set("confirm", e.target.value)} />
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg px-3.5 py-2.5 text-sm text-red-600">
+              <div className="pl-4 py-2.5 text-sm font-sans"
+                style={{ borderLeft: "2px solid #ba1a1a", backgroundColor: "#fff0f0", color: "#ba1a1a" }}>
                 {error}
               </div>
             )}
 
-            <button
-              type="submit" disabled={loading}
-              className="w-full bg-gray-900 text-white font-semibold py-3 rounded-lg hover:bg-gray-800
-                         transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center
-                         justify-center gap-2 text-sm"
-            >
+            <button type="submit" disabled={loading}
+              className="w-full font-mono text-[11px] tracking-[0.12em] py-4 flex items-center justify-center gap-2
+                         hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed uppercase"
+              style={{ backgroundColor: "#000000", color: "#ffffff" }}>
               {loading ? (
-                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Creating account…</>
-              ) : (
-                <>Create {accountType === "business" ? "Business" : "Client"} Account <ArrowRight size={15} /></>
-              )}
+                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> CREATING ACCOUNT</>
+              ) : `CREATE ${accountType.toUpperCase()} ACCOUNT →`}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-5">
+          <p className="text-center font-sans text-sm text-on-surface-variant mt-6">
             Already have an account?{" "}
-            <Link href="/login" className="text-[#C9A452] font-semibold hover:underline">Sign in →</Link>
+            <Link href="/login" className="text-primary font-semibold hover:underline">Sign in →</Link>
           </p>
         </div>
+
+        <p className="text-center font-mono text-[10px] tracking-widest text-on-surface-variant/40 uppercase mt-6">
+          © {new Date().getFullYear()} Navkar Impex
+        </p>
       </div>
     </div>
   );

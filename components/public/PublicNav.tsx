@@ -2,13 +2,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Menu, X } from "lucide-react";
 import NavkarLogo from "@/components/NavkarLogo";
 
 const NAV_LINKS = [
-  { label: "Services", href: "#services" },
-  { label: "How It Works", href: "#process" },
-  { label: "About", href: "#about" },
+  { label: "SEA", href: "#services" },
+  { label: "AIR", href: "#services" },
+  { label: "CUSTOMS", href: "#services" },
+  { label: "ABOUT", href: "#about" },
 ];
 
 export default function PublicNav() {
@@ -17,7 +17,7 @@ export default function PublicNav() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20);
+    const fn = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
@@ -25,84 +25,89 @@ export default function PublicNav() {
   const dashHref = session?.user?.role === "ADMIN" ? "/dashboard/admin" : "/dashboard/client";
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? "bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm" : "bg-transparent"
-    }`}>
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300
+      bg-surface/80 backdrop-blur-md border-b border-outline-variant/30
+      ${scrolled ? "shadow-sm py-4" : "py-5"}`}>
+      <div className="max-w-[1440px] mx-auto px-5 md:px-20 flex items-center justify-between">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center group">
-          <div className={`flex items-center gap-2 transition-all duration-300 rounded-lg ${
-            !scrolled ? "bg-white/90 backdrop-blur-sm px-2.5 py-1.5" : ""
-          }`}>
-            <NavkarLogo variant="symbol" symbolSize={30} />
-            <NavkarLogo variant="wordmark" className="h-6 w-auto" />
+        <Link href="/" className="flex items-center">
+          <div className="flex items-center gap-2">
+            <NavkarLogo variant="symbol" symbolSize={28} />
+            <NavkarLogo variant="wordmark" className="h-5 w-auto" />
           </div>
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map(l => (
+        <div className="hidden md:flex items-center gap-10">
+          {NAV_LINKS.map((l, i) => (
             <a key={l.label} href={l.href}
-              className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">
+              className={`font-mono text-[11px] tracking-[0.12em] transition-colors ${
+                i === 0
+                  ? "text-primary border-b border-secondary pb-0.5 font-bold"
+                  : "text-on-surface-variant hover:text-primary"
+              }`}>
               {l.label}
             </a>
           ))}
         </div>
 
         {/* Auth CTAs */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-5">
           {session ? (
             <Link href={dashHref}
-              className="text-sm font-semibold bg-[#C9A452] text-white px-4 py-2 rounded-md hover:bg-[#b8922f] transition-colors">
-              Dashboard →
+              className="bg-primary text-on-primary font-mono text-[11px] tracking-[0.12em] px-7 py-3 hover:opacity-80 transition-opacity">
+              DASHBOARD
             </Link>
           ) : (
             <>
               <Link href="/login"
-                className="text-sm font-medium text-gray-600 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors">
-                Login
+                className="font-mono text-[11px] tracking-[0.12em] text-on-surface-variant hover:text-primary transition-colors">
+                LOGIN
               </Link>
               <Link href="/signup"
-                className="text-sm font-semibold bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors">
-                Get Started
+                className="bg-primary text-on-primary font-mono text-[11px] tracking-[0.12em] px-7 py-3 hover:opacity-80 transition-opacity active:scale-95">
+                GET QUOTE
               </Link>
             </>
           )}
         </div>
 
         {/* Mobile toggle */}
-        <button className="md:hidden p-1 text-gray-500 hover:text-gray-900 transition-colors"
-          onClick={() => setOpen(!open)} aria-label="Toggle menu">
-          {open ? <X size={20} /> : <Menu size={20} />}
+        <button className="md:hidden font-mono text-[11px] tracking-widest text-primary"
+          onClick={() => setOpen(o => !o)}>
+          {open ? "CLOSE" : "MENU"}
         </button>
       </div>
 
       {/* Mobile drawer */}
       {open && (
-        <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 space-y-3">
+        <div className="md:hidden bg-surface border-t border-outline-variant px-5 py-6 space-y-4">
           {NAV_LINKS.map(l => (
             <a key={l.label} href={l.href}
-              className="block text-sm text-gray-600 hover:text-gray-900 py-1.5 font-medium"
+              className="block font-mono text-[11px] tracking-[0.12em] text-on-surface-variant hover:text-primary py-2"
               onClick={() => setOpen(false)}>
               {l.label}
             </a>
           ))}
-          <div className="pt-3 border-t border-gray-100 flex flex-col gap-2">
+          <div className="pt-4 border-t border-outline-variant flex flex-col gap-3">
             {session ? (
               <Link href={dashHref}
-                className="text-sm font-semibold bg-[#C9A452] text-white px-4 py-2 rounded-md text-center">
-                Dashboard →
+                className="font-mono text-[11px] tracking-widest bg-primary text-on-primary px-6 py-3 text-center"
+                onClick={() => setOpen(false)}>
+                DASHBOARD
               </Link>
             ) : (
               <>
                 <Link href="/login"
-                  className="text-sm font-medium text-gray-600 border border-gray-200 px-4 py-2 rounded-md text-center">
-                  Login
+                  className="font-mono text-[11px] tracking-widest border border-outline text-on-surface-variant px-6 py-3 text-center"
+                  onClick={() => setOpen(false)}>
+                  LOGIN
                 </Link>
                 <Link href="/signup"
-                  className="text-sm font-semibold bg-gray-900 text-white px-4 py-2 rounded-md text-center">
-                  Get Started
+                  className="font-mono text-[11px] tracking-widest bg-primary text-on-primary px-6 py-3 text-center"
+                  onClick={() => setOpen(false)}>
+                  GET QUOTE
                 </Link>
               </>
             )}

@@ -3,8 +3,6 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import GlobeCanvas from "@/components/public/GlobeCanvas";
 import NavkarLogo from "@/components/NavkarLogo";
 
 export default function LoginPage() {
@@ -42,140 +40,158 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex relative" style={{ background: "linear-gradient(160deg, #FDFCF9 0%, #F0EDE6 100%)" }}>
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-5/12 bg-[#080d1a] flex-col justify-between p-14 relative overflow-hidden">
-        {/* Globe animation in left panel */}
-        <div className="absolute inset-0">
-          <GlobeCanvas cx={0.5} cy={0.5} radiusFactor={0.44} opacity={0.9} />
-        </div>
-        <div className="absolute inset-0"
-          style={{ background: "linear-gradient(to bottom, rgba(8,13,26,0.3) 0%, rgba(8,13,26,0.15) 50%, rgba(8,13,26,0.5) 100%)" }} />
+    <div className="min-h-screen flex canvas-bg" style={{ backgroundColor: "#f9f9f9" }}>
 
-        <div className="relative inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2">
-          <NavkarLogo variant="symbol" symbolSize={32} />
+      {/* Left dark panel */}
+      <div className="hidden lg:flex lg:w-5/12 flex-col justify-between p-16 relative overflow-hidden"
+        style={{ backgroundColor: "#000000" }}>
+
+        {/* Watermark */}
+        <div className="absolute inset-0 flex items-end justify-start overflow-hidden pointer-events-none select-none">
+          <span className="font-display text-white leading-none"
+            style={{ fontSize: "240px", opacity: 0.025, fontStyle: "italic", fontWeight: 700, lineHeight: 0.85 }}>
+            Navkar
+          </span>
+        </div>
+
+        {/* Logo */}
+        <div className="relative inline-flex items-center gap-2 px-3 py-2 self-start"
+          style={{ backgroundColor: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)" }}>
+          <NavkarLogo variant="symbol" symbolSize={30} />
           <NavkarLogo variant="wordmark" className="h-6 w-auto" />
         </div>
 
+        {/* Quote */}
         <div className="relative">
-          <p className="text-[#C9A452] text-xs font-semibold uppercase tracking-widest mb-4">Portal Access</p>
-          <h2 className="font-display text-4xl font-light text-white leading-tight mb-4">
+          <p className="font-mono text-[11px] tracking-[0.2em] mb-6 uppercase"
+            style={{ color: "#735c00" }}>
+            Portal Access
+          </p>
+          <h2 className="font-display text-white mb-6"
+            style={{ fontSize: "clamp(28px, 3vw, 40px)", fontWeight: 400, lineHeight: 1.3, fontStyle: "italic" }}>
             Your Cargo.<br />Always in<br />
-            <span style={{ color: "#C9A452" }}>Safe Hands.</span>
+            <span style={{ color: "#fed65b", fontStyle: "normal", fontWeight: 600 }}>Safe Hands.</span>
           </h2>
-          <div className="w-10 h-px bg-[#C9A452] mb-6" />
-          <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
+          <div className="mb-6" style={{ height: "1px", width: "48px", backgroundColor: "#735c00" }} />
+          <p className="font-sans text-sm leading-relaxed max-w-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
             Track shipments, view invoices, download documents and request quotes — all in one portal.
           </p>
         </div>
 
+        {/* Stats */}
         <div className="relative grid grid-cols-3 gap-3">
-          {[["500+", "Clients"], ["10K+", "Shipments"], ["50+", "Countries"]].map(([v, l]) => (
-            <div key={l} className="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
-              <div className="font-display text-xl text-[#C9A452]">{v}</div>
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{l}</div>
+          {[["500+", "CLIENTS"], ["CHA", "LICENSED"], ["1994", "EST."]].map(([v, l]) => (
+            <div key={l} className="p-4 text-center"
+              style={{ border: "1px solid rgba(255,255,255,0.08)", backgroundColor: "rgba(255,255,255,0.04)" }}>
+              <div className="font-display text-xl" style={{ color: "#fed65b", fontStyle: "italic" }}>{v}</div>
+              <div className="font-mono mt-0.5" style={{ fontSize: "10px", letterSpacing: "0.12em", color: "rgba(255,255,255,0.35)" }}>{l}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Right: form */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-14 relative z-10">
+      {/* Right form panel */}
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-16">
         <div className="w-full max-w-sm">
 
           {/* Mobile logo */}
-          <div className="flex lg:hidden items-center gap-2 mb-8 justify-center">
-            <NavkarLogo variant="symbol" symbolSize={32} />
+          <div className="flex lg:hidden items-center gap-2 mb-10 justify-center">
+            <NavkarLogo variant="symbol" symbolSize={30} />
             <NavkarLogo variant="wordmark" className="h-6 w-auto" />
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h1>
-          <p className="text-sm text-gray-500 mb-8">Sign in to continue to your portal</p>
+          <p className="font-mono text-[11px] tracking-[0.2em] mb-3 uppercase" style={{ color: "#735c00" }}>
+            Client Portal
+          </p>
+          <h1 className="font-display mb-10" style={{ fontSize: "clamp(36px, 5vw, 52px)", fontWeight: 600, letterSpacing: "-0.02em" }}>
+            Welcome<br />back.
+          </h1>
 
-          {/* Quick demo */}
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2">Demo Access</p>
+          {/* Quick demo access */}
+          <div className="mb-8">
+            <p className="font-mono text-[10px] tracking-[0.12em] text-on-surface-variant mb-3 uppercase">Demo Access</p>
             <div className="grid grid-cols-2 gap-2">
               <button onClick={() => quickLogin("admin")} disabled={loading}
-                className="border border-gray-200 rounded-lg px-3 py-2.5 text-left hover:border-[#C9A452]/40
-                           hover:bg-[#C9A452]/5 transition-all disabled:opacity-50 group bg-white">
-                <div className="text-[10px] text-gray-400 mb-0.5 uppercase tracking-wide">Business</div>
-                <div className="text-xs font-semibold text-[#C9A452] flex items-center gap-1
-                                group-hover:gap-1.5 transition-all">
-                  Quick Login <ArrowRight size={11} />
+                className="border border-outline-variant p-3 text-left hover:border-primary transition-all disabled:opacity-50 group"
+                style={{ backgroundColor: "#ffffff" }}>
+                <div className="font-mono text-[9px] text-on-surface-variant mb-0.5 uppercase tracking-wide">Business</div>
+                <div className="font-sans text-xs font-semibold text-primary flex items-center gap-1">
+                  Quick Login <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
                 </div>
               </button>
               <button onClick={() => quickLogin("client")} disabled={loading}
-                className="border border-gray-200 rounded-lg px-3 py-2.5 text-left hover:border-gray-300
-                           hover:bg-gray-50 transition-all disabled:opacity-50 group bg-white">
-                <div className="text-[10px] text-gray-400 mb-0.5 uppercase tracking-wide">Client</div>
-                <div className="text-xs font-semibold text-gray-700 flex items-center gap-1
-                                group-hover:gap-1.5 transition-all">
-                  Quick Login <ArrowRight size={11} />
+                className="border border-outline-variant p-3 text-left hover:border-outline transition-all disabled:opacity-50 group"
+                style={{ backgroundColor: "#ffffff" }}>
+                <div className="font-mono text-[9px] text-on-surface-variant mb-0.5 uppercase tracking-wide">Client</div>
+                <div className="font-sans text-xs font-semibold text-on-surface flex items-center gap-1">
+                  Quick Login <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
                 </div>
               </button>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400">or sign in with email</span>
-            <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex items-center gap-3 mb-8">
+            <div className="flex-1 h-px bg-outline-variant" />
+            <span className="font-mono text-[10px] tracking-widest text-on-surface-variant">OR</span>
+            <div className="flex-1 h-px bg-outline-variant" />
           </div>
 
           {/* Form */}
-          <form onSubmit={login} className="space-y-4">
+          <form onSubmit={login} className="space-y-8">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
+              <label className="block font-mono text-[10px] tracking-[0.12em] uppercase text-on-surface-variant mb-2">
                 Email Address
               </label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                           placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                           focus:border-[#C9A452]/50 bg-white transition-all"
+                className="w-full border-0 border-b bg-transparent pb-3 text-sm text-on-surface
+                           placeholder-on-surface-variant/40 focus:outline-none transition-colors font-sans"
+                style={{ borderBottom: "1px solid #c6c6cd", borderRadius: 0 }}
+                onFocus={e => (e.target.style.borderBottomColor = "#000000")}
+                onBlur={e => (e.target.style.borderBottomColor = "#c6c6cd")}
                 placeholder="you@company.com" required autoFocus />
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block font-mono text-[10px] tracking-[0.12em] uppercase text-on-surface-variant">
                   Password
                 </label>
-                <Link href="/forgot-password" className="text-[11px] text-[#C9A452] hover:underline">
-                  Forgot?
+                <Link href="/forgot-password" className="font-mono text-[10px] tracking-widest hover:underline" style={{ color: "#735c00" }}>
+                  FORGOT?
                 </Link>
               </div>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                           placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                           focus:border-[#C9A452]/50 bg-white transition-all"
+                className="w-full border-0 border-b bg-transparent pb-3 text-sm text-on-surface
+                           placeholder-on-surface-variant/40 focus:outline-none transition-colors font-sans"
+                style={{ borderBottom: "1px solid #c6c6cd", borderRadius: 0 }}
+                onFocus={e => (e.target.style.borderBottomColor = "#000000")}
+                onBlur={e => (e.target.style.borderBottomColor = "#c6c6cd")}
                 placeholder="••••••••" required />
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg px-3.5 py-2.5 text-sm text-red-600">
+              <div className="pl-4 py-2.5 text-sm font-sans"
+                style={{ borderLeft: "2px solid #ba1a1a", backgroundColor: "#fff0f0", color: "#ba1a1a" }}>
                 {error}
               </div>
             )}
 
             <button type="submit" disabled={loading}
-              className="w-full bg-gray-900 text-white font-semibold py-3 rounded-lg hover:bg-gray-800
-                         transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center
-                         justify-center gap-2 text-sm">
+              className="w-full font-mono text-[11px] tracking-[0.12em] py-4 flex items-center justify-center gap-2
+                         hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed uppercase"
+              style={{ backgroundColor: "#000000", color: "#ffffff" }}>
               {loading ? (
-                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Signing in…</>
-              ) : (
-                <>Sign In <ArrowRight size={15} /></>
-              )}
+                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> SIGNING IN</>
+              ) : "SIGN IN →"}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center font-sans text-sm text-on-surface-variant mt-8">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-[#C9A452] font-semibold hover:underline">Sign up free</Link>
+            <Link href="/signup" className="text-primary font-semibold hover:underline">Sign up free</Link>
           </p>
 
-          <p className="text-center text-xs text-gray-400 mt-8">
+          <p className="text-center font-mono text-[10px] tracking-widest text-on-surface-variant/40 uppercase mt-8">
             © {new Date().getFullYear()} Navkar Impex
           </p>
         </div>
