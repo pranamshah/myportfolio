@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Search } from "lucide-react";
+import Link from "next/link";
 import Modal from "@/components/ui/Modal";
 import { formatDate } from "@/lib/utils";
 
@@ -93,7 +94,10 @@ export default function ClientsPage() {
                 </td>
                 <td className="text-xs text-black/40">{formatDate(c.createdAt)}</td>
                 <td>
-                  <button onClick={() => openEdit(c)} className="text-xs text-secondary hover:text-black transition-colors">Edit</button>
+                  <div className="flex items-center gap-3">
+                    <Link href={`/dashboard/admin/clients/${c._id}`} className="text-xs font-bold uppercase tracking-widest font-mono hover:text-black transition-colors" style={{ color: "#735c00" }}>View</Link>
+                    <button onClick={() => openEdit(c)} className="text-xs text-black/40 hover:text-black transition-colors">Edit</button>
+                  </div>
                 </td>
               </tr>
             ))}
