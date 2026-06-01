@@ -4,6 +4,21 @@
 @tailwind components;
 @tailwind utilities;
 
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  line-height: 1;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+}
+
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
 
@@ -73,66 +88,76 @@
   will-change: transform;
 }
 
-/* ─── Dashboard dark theme compat ─── */
+/* ─── Admin portal — white/light theme ─── */
 
 @layer components {
   .gold-line {
-    background: linear-gradient(90deg, transparent, #C9A452, transparent);
+    background: linear-gradient(90deg, transparent, #735c00, transparent);
     height: 1px;
     width: 100%;
   }
 
   .card-luxury {
-    @apply bg-surface-card border border-surface-hover;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3);
+    @apply bg-white border border-black/10;
   }
 
   .btn-gold {
-    @apply bg-gold text-surface-deep font-semibold px-5 py-2.5 transition-all duration-200;
+    @apply font-mono font-bold text-[11px] tracking-widest uppercase px-6 py-3 transition-all duration-200;
+    background-color: #735c00;
+    color: #ffffff;
   }
+  .btn-gold:hover { opacity: 0.85; }
 
   .btn-ghost {
-    @apply border border-surface-hover text-ink-secondary px-5 py-2.5 transition-all duration-200;
+    @apply font-mono font-bold text-[11px] tracking-widest uppercase border border-black/20 text-black/70
+           px-6 py-3 transition-all duration-200 hover:border-black hover:text-black;
   }
 
   .input-luxury {
-    @apply bg-surface-primary border border-surface-hover px-3 py-2 text-sm text-ink
-           placeholder-ink-muted focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/20
+    @apply bg-white border border-black/10 px-3 py-2.5 text-sm text-black
+           placeholder-black/30 focus:outline-none focus:border-black
            transition-all duration-200 w-full;
+    border-radius: 0;
   }
 
   .label-luxury {
-    @apply text-xs text-ink-secondary uppercase tracking-wider mb-1 block;
+    @apply font-mono text-[10px] text-black/50 uppercase tracking-wider mb-1.5 block font-bold;
   }
 
   .sidebar-link {
-    @apply flex items-center gap-3 px-3 py-2.5 text-ink-secondary text-sm
-           transition-all duration-200 cursor-pointer;
+    @apply flex items-center gap-3 px-6 py-4 font-mono uppercase tracking-widest text-[11px]
+           text-white/70 transition-all duration-300 cursor-pointer hover:text-white hover:bg-white/5;
   }
-  .sidebar-link:hover { @apply bg-surface-hover text-ink; }
-  .sidebar-link.active { @apply bg-gold/10 text-gold border-l-2 border-gold; }
+  .sidebar-link.active {
+    @apply font-bold;
+    background-color: #735c00;
+    color: #000000;
+  }
 
   .table-luxury {
-    @apply w-full text-sm;
+    @apply w-full;
   }
   .table-luxury th {
-    @apply text-xs text-ink-muted uppercase tracking-wider px-4 py-3 text-left border-b border-surface-hover;
+    @apply font-mono text-[10px] font-bold text-black/40 uppercase tracking-widest
+           px-4 py-4 text-left border-b border-black/10;
   }
   .table-luxury td {
-    @apply px-4 py-3 border-b border-surface-hover/50 text-ink-secondary;
+    @apply px-4 py-4 border-b border-black/5 text-black/70 text-sm;
   }
-  .table-luxury tr:hover td { @apply bg-surface-hover/30; }
+  .table-luxury tr:hover td { @apply bg-black/5; }
 
   .status-badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border;
+    @apply inline-flex items-center px-3 py-1 text-[10px] font-bold uppercase tracking-widest border;
   }
 
   .page-heading {
-    @apply font-display text-2xl font-light text-ink mb-1;
+    @apply font-display font-bold text-black mb-1;
+    font-size: clamp(32px, 4vw, 48px);
+    letter-spacing: -0.02em;
   }
 
   .section-heading {
-    @apply text-xs text-ink-muted uppercase tracking-widest mb-4;
+    @apply font-mono text-[10px] font-bold text-black/40 uppercase tracking-widest mb-4;
   }
 }
 

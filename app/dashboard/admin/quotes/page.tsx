@@ -62,24 +62,24 @@ export default function QuotesPage() {
           <tbody>
             {quotes.map(q => (
               <tr key={q._id}>
-                <td className="font-medium text-sm text-ink">{q.quoteNo}</td>
+                <td className="font-medium text-sm text-black">{q.quoteNo}</td>
                 <td>
                   <div className="text-sm">{q.client?.name}</div>
-                  <div className="text-xs text-ink-muted">{q.client?.company}</div>
+                  <div className="text-xs text-black/40">{q.client?.company}</div>
                 </td>
-                <td className="text-xs text-ink-secondary">{q.origin} → {q.destination}</td>
-                <td className="text-xs text-ink-secondary">{q.cargoType}</td>
+                <td className="text-xs text-black/60">{q.origin} → {q.destination}</td>
+                <td className="text-xs text-black/60">{q.cargoType}</td>
                 <td><QuoteBadge status={q.status} /></td>
                 <td className="text-sm">{q.quotedAmount ? formatINR(q.quotedAmount) : "—"}</td>
-                <td className="text-xs text-ink-muted">{formatDate(q.createdAt)}</td>
+                <td className="text-xs text-black/40">{formatDate(q.createdAt)}</td>
                 <td>
-                  <button onClick={() => { setSelected(q); setReplyForm({ quotedAmount: String(q.quotedAmount || ""), validUntil: q.validUntil ? q.validUntil.split("T")[0] : "", adminNotes: q.adminNotes || "", status: q.status === "PENDING" ? "QUOTED" : q.status }); }} className="text-xs text-gold hover:text-gold-light transition-colors">
+                  <button onClick={() => { setSelected(q); setReplyForm({ quotedAmount: String(q.quotedAmount || ""), validUntil: q.validUntil ? q.validUntil.split("T")[0] : "", adminNotes: q.adminNotes || "", status: q.status === "PENDING" ? "QUOTED" : q.status }); }} className="text-xs text-secondary hover:text-black transition-colors">
                     {q.status === "PENDING" ? "Reply" : "Edit"}
                   </button>
                 </td>
               </tr>
             ))}
-            {quotes.length === 0 && <tr><td colSpan={8} className="text-center text-ink-muted py-10">No quotes yet.</td></tr>}
+            {quotes.length === 0 && <tr><td colSpan={8} className="text-center text-black/40 py-10">No quotes yet.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -100,14 +100,14 @@ export default function QuotesPage() {
                 ["Commodity", selected.commodity || "—"],
               ].map(([l, v]) => (
                 <div key={l}>
-                  <div className="text-xs text-ink-muted">{l}</div>
-                  <div className="text-ink">{v || "—"}</div>
+                  <div className="text-xs text-black/40">{l}</div>
+                  <div className="text-black">{v || "—"}</div>
                 </div>
               ))}
             </div>
             {selected.remarks && (
-              <div className="bg-surface-hover rounded p-3 text-sm text-ink-secondary">
-                <span className="text-xs text-ink-muted block mb-1">Client Remarks:</span>
+              <div className="bg-black/5 rounded p-3 text-sm text-black/60">
+                <span className="text-xs text-black/40 block mb-1">Client Remarks:</span>
                 {selected.remarks}
               </div>
             )}

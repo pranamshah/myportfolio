@@ -77,7 +77,7 @@ export default function ShipmentsPage() {
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search shipments..." className="input-luxury pl-9" />
         </div>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input-luxury w-auto min-w-[160px]">
@@ -104,31 +104,31 @@ export default function ShipmentsPage() {
             {filtered.map(s => (
               <tr key={s._id}>
                 <td>
-                  <Link href={`/dashboard/admin/shipments/${s._id}`} className="text-gold hover:text-gold-light transition-colors font-medium text-sm">
+                  <Link href={`/dashboard/admin/shipments/${s._id}`} className="text-secondary hover:text-black transition-colors font-medium text-sm">
                     {s.shipmentId}
                   </Link>
                 </td>
                 <td>
-                  <div className="text-sm text-ink">{s.client?.name}</div>
-                  <div className="text-xs text-ink-muted">{s.client?.company}</div>
+                  <div className="text-sm text-black">{s.client?.name}</div>
+                  <div className="text-xs text-black/40">{s.client?.company}</div>
                 </td>
                 <td className="max-w-[160px]"><div className="truncate text-sm">{s.description}</div></td>
-                <td className="text-xs text-ink-secondary">{s.origin}<br />→ {s.destination}</td>
+                <td className="text-xs text-black/60">{s.origin}<br />→ {s.destination}</td>
                 <td><StatusBadge status={s.status} /></td>
-                <td className="text-xs text-ink-muted">
+                <td className="text-xs text-black/40">
                   {s.etd ? <div>ETD: {formatDate(s.etd)}</div> : null}
                   {s.eta ? <div>ETA: {formatDate(s.eta)}</div> : null}
                 </td>
                 <td>
                   <div className="flex gap-2">
-                    <Link href={`/dashboard/admin/shipments/${s._id}`} className="text-xs text-gold hover:text-gold-light transition-colors">View</Link>
-                    <button onClick={() => openEdit(s)} className="text-xs text-ink-secondary hover:text-ink transition-colors">Edit</button>
+                    <Link href={`/dashboard/admin/shipments/${s._id}`} className="text-xs text-secondary hover:text-black transition-colors">View</Link>
+                    <button onClick={() => openEdit(s)} className="text-xs text-black/60 hover:text-black transition-colors">Edit</button>
                   </div>
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={7} className="text-center text-ink-muted py-10">No shipments found.</td></tr>
+              <tr><td colSpan={7} className="text-center text-black/40 py-10">No shipments found.</td></tr>
             )}
           </tbody>
         </table>
@@ -187,7 +187,7 @@ export default function ShipmentsPage() {
             <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="input-luxury" rows={2} />
           </div>
         </div>
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-surface-hover">
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-black/10">
           <button onClick={() => { setShowModal(false); setEditId(null); }} className="btn-ghost text-sm">Cancel</button>
           <button onClick={save} disabled={saving || !form.client || !form.description || !form.origin || !form.destination} className="btn-gold text-sm disabled:opacity-50">
             {saving ? "Saving..." : editId ? "Update" : "Create Shipment"}
