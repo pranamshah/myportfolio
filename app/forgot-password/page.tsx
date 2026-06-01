@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, ArrowLeft } from "lucide-react";
+import NavkarLogo from "@/components/NavkarLogo";
 
 export default function ForgotPasswordPage() {
   return (
@@ -7,13 +8,9 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-sm text-center">
 
         {/* Logo */}
-        <div className="flex items-center gap-2 justify-center mb-10">
-          <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="font-semibold text-gray-900">Navkar Impex</span>
+        <div className="flex items-center gap-2.5 justify-center mb-10">
+          <NavkarLogo variant="symbol" symbolSize={36} />
+          <NavkarLogo variant="wordmark" className="h-8 w-auto" />
         </div>
 
         {/* Icon */}
@@ -32,12 +29,12 @@ export default function ForgotPasswordPage() {
 
           <div className="bg-gray-50 rounded-lg p-4 space-y-3">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Contact Us</p>
-            <a href="mailto:admin@navkarimpex.com"
+            <a href="mailto:navkarimpex.co@gmail.com"
               className="flex items-center gap-3 text-sm group">
               <div className="w-8 h-8 rounded-lg bg-[#C9A452]/10 flex items-center justify-center flex-shrink-0">
                 <Mail size={14} className="text-[#C9A452]" />
               </div>
-              <span className="text-[#C9A452] group-hover:underline font-medium">admin@navkarimpex.com</span>
+              <span className="text-[#C9A452] group-hover:underline font-medium">navkarimpex.co@gmail.com</span>
             </a>
             <p className="text-xs text-gray-400 pl-11">
               Include your registered email so we can find your account.

@@ -1,76 +1,110 @@
 "use client";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
-import GlobeCanvas from "./GlobeCanvas";
+import dynamic from "next/dynamic";
+
+// Three.js uses browser WebGL — must be client-only
+const GlobeCanvas = dynamic(() => import("./GlobeCanvas"), { ssr: false, loading: () => null });
 
 export default function HeroSection() {
-  return (
-    <section className="relative min-h-screen flex items-center overflow-hidden"
-      style={{ background: "linear-gradient(160deg, #080d1a 0%, #0d1630 50%, #090e1c 100%)" }}>
+  const watermarkRef = useRef<HTMLDivElement>(null);
 
-      {/* Globe — positioned right-center, large and dramatic */}
-      <div className="absolute inset-0">
-        <GlobeCanvas cx={0.72} cy={0.5} radiusFactor={0.46} opacity={1} />
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!watermarkRef.current) return;
+      const x = e.clientX / window.innerWidth  - 0.5;
+      const y = e.clientY / window.innerHeight - 0.5;
+      watermarkRef.current.style.transform = `translate(${x * 12}px, ${y * 12}px)`;
+    };
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMouseMove);
+  }, []);
+
+  return (
+    <section className="relative min-h-screen flex flex-col justify-center overflow-hidden"
+      style={{ backgroundColor: "#f5f6f8" }}>
+
+      {/* ── Dark space backdrop around the globe (fades at top to avoid dark corner) ── */}
+      <div className="absolute inset-y-0 right-0 w-[72%] pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at 80% 62%, rgba(4,10,30,0.95) 0%, rgba(4,10,30,0.88) 20%, rgba(4,10,30,0.62) 38%, rgba(4,10,30,0.18) 56%, transparent 70%)",
+        }}
+      />
+
+      {/* ── Globe canvas (transparent bg, full section so stars fill space) ── */}
+      <div className="absolute inset-0 pointer-events-none">
+        <GlobeCanvas cx={0.64} cy={0.50} opacity={1} />
       </div>
 
-      {/* Left gradient so text is readable */}
+      {/* ── Left gradient: light bg → transparent so globe shows on right ── */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(to right, rgba(8,13,26,1) 0%, rgba(8,13,26,0.94) 28%, rgba(8,13,26,0.5) 55%, transparent 75%)" }} />
+        style={{
+          background:
+            "linear-gradient(to right, #f5f6f8 0%, #f5f6f8 28%, rgba(245,246,248,0.90) 40%, rgba(245,246,248,0.45) 52%, transparent 66%)",
+        }}
+      />
 
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none"
-        style={{ background: "linear-gradient(to top, #080d1a, transparent)" }} />
+      {/* ── Watermark ── */}
+      <div ref={watermarkRef}
+        className="watermark-text absolute top-1/2 left-0 -translate-y-1/2 select-none pointer-events-none"
+        style={{
+          fontFamily: "'Playfair Display', Georgia, serif",
+          fontSize: "clamp(160px, 22vw, 340px)",
+          fontWeight: 700,
+          fontStyle: "italic",
+          color: "#1a1c1c",
+          opacity: 0.03,
+          whiteSpace: "nowrap",
+          zIndex: 0,
+        }}>
+        Navkar
+      </div>
 
-      {/* Content — left-aligned */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6 pt-24 pb-20 w-full">
-        <div className="max-w-xl">
+      {/* ── Text content — left side ── */}
+      <div className="relative z-10 max-w-[1440px] mx-auto px-5 md:px-20 pt-28 pb-12 w-full">
+        <div className="max-w-[540px]">
 
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 border border-[#C9A452]/40 rounded-full px-4 py-1.5 mb-8 bg-white/5 backdrop-blur-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C9A452] animate-pulse" />
-            <span className="text-xs font-semibold text-[#C9A452] uppercase tracking-widest">
-              Freight Forwarding &amp; Logistics — Chennai
-            </span>
-          </div>
+          <span className="font-mono text-[11px] tracking-[0.22em] text-secondary mb-5 block uppercase">
+            Established 2026 · Chennai, India
+          </span>
 
-          {/* Headline */}
-          <h1 className="font-display text-[clamp(2.4rem,5.5vw,4.5rem)] font-light text-white leading-[1.08] mb-5 tracking-tight">
-            Your Cargo.<br />Our Expertise.<br />
-            <em style={{ color: "#C9A452", fontStyle: "italic" }}>The World, Connected.</em>
+          <h1 className="font-display mb-12"
+            style={{
+              fontSize: "clamp(48px, 7vw, 110px)",
+              lineHeight: "108%",
+              letterSpacing: "-0.04em",
+              fontWeight: 700,
+            }}>
+            Your Cargo.<br />
+            <span style={{ fontStyle: "italic", fontWeight: 400 }}>Our Universe.</span>
           </h1>
 
-          <div className="w-14 h-px bg-[#C9A452] mb-6" />
-
-          <p className="text-gray-400 text-lg leading-relaxed mb-10">
-            Sea freight, air freight, customs clearance and door-to-door delivery for businesses across India.
+          <p className="font-sans text-lg text-on-surface-variant leading-relaxed mb-10 max-w-[400px]">
+            Elite freight forwarding — sea, air, customs and door-to-door delivery
+            for businesses across India.
           </p>
 
-          {/* CTAs */}
-          <div className="flex flex-wrap items-center gap-3">
-            <Link href="/signup"
-              className="bg-[#C9A452] text-gray-900 font-semibold px-8 py-3 rounded-lg hover:bg-[#d4b06a] transition-colors text-sm shadow-lg">
-              Get a Free Quote
-            </Link>
+          <div className="flex flex-col gap-5">
+            <a href="#services"
+              className="group inline-flex items-center gap-4 font-mono text-[11px] tracking-[0.12em] text-primary">
+              <span className="h-px w-12 bg-primary transition-all duration-300 group-hover:w-20" />
+              EXPLORE SERVICES
+            </a>
             <Link href="/login"
-              className="border border-white/20 bg-white/5 backdrop-blur-sm text-white font-medium px-8 py-3 rounded-lg hover:border-white/40 hover:bg-white/10 transition-colors text-sm">
-              Track Shipment →
+              className="group inline-flex items-center gap-4 font-mono text-[11px] tracking-[0.12em] text-on-surface-variant hover:text-primary transition-colors">
+              <span className="h-px w-12 bg-outline-variant transition-all duration-300 group-hover:w-20 group-hover:bg-primary" />
+              CLIENT PORTAL
             </Link>
           </div>
 
-          {/* Trust row */}
-          <div className="mt-12 flex flex-wrap gap-x-8 gap-y-3 text-xs text-gray-500 font-medium">
-            {[
-              "Sea · Air · Land Freight",
-              "Customs & CHA Coordination",
-              "Door-to-Door Delivery",
-              "Real-Time Tracking",
-            ].map(t => (
-              <span key={t} className="flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-[#C9A452]/60" />
-                {t}
-              </span>
-            ))}
-          </div>
         </div>
+      </div>
+
+      {/* ── Scroll hint ── */}
+      <div className="absolute bottom-8 left-5 md:left-20 flex items-center gap-3 z-10">
+        <div className="w-px h-10 bg-outline-variant" />
+        <span className="font-mono text-[10px] tracking-[0.18em] text-on-surface-variant">SCROLL</span>
       </div>
     </section>
   );

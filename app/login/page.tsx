@@ -1,17 +1,35 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import GlobeCanvas from "@/components/public/GlobeCanvas";
+import NavkarLogo from "@/components/NavkarLogo";
+
+/* eslint-disable @next/next/no-img-element */
+
+const HERO_IMG =
+  "https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=900&fit=crop&q=80";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passFocused,  setPassFocused]  = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const fn = (e: MouseEvent) => {
+      if (!imgRef.current) return;
+      const x = (e.clientX - window.innerWidth  / 2) * 0.012;
+      const y = (e.clientY - window.innerHeight / 2) * 0.012;
+      imgRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    };
+    window.addEventListener("mousemove", fn, { passive: true });
+    return () => window.removeEventListener("mousemove", fn);
+  }, []);
 
   async function login(e?: React.FormEvent, ovEmail?: string, ovPass?: string) {
     e?.preventDefault();
@@ -23,8 +41,8 @@ export default function LoginPage() {
         password: ovPass ?? password,
         redirect: false,
       });
-      if (res?.error) { setError("Invalid email or password. Please try again."); }
-      else { router.push("/dashboard"); }
+      if (res?.error) setError("Invalid email or password. Please try again.");
+      else router.push("/dashboard");
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -32,161 +50,199 @@ export default function LoginPage() {
     }
   }
 
-  function quickLogin(role: "admin" | "client") {
-    const creds = {
-      admin: { email: "admin@navkarimpex.com", password: "Admin@12345" },
-      client: { email: "client@navkarimpex.com", password: "Client@12345" },
-    };
-    login(undefined, creds[role].email, creds[role].password);
-  }
-
   return (
-    <div className="min-h-screen flex relative" style={{ background: "linear-gradient(160deg, #FDFCF9 0%, #F0EDE6 100%)" }}>
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-5/12 bg-[#080d1a] flex-col justify-between p-14 relative overflow-hidden">
-        {/* Globe animation in left panel */}
-        <div className="absolute inset-0">
-          <GlobeCanvas cx={0.5} cy={0.5} radiusFactor={0.44} opacity={0.9} />
-        </div>
-        <div className="absolute inset-0"
-          style={{ background: "linear-gradient(to bottom, rgba(8,13,26,0.3) 0%, rgba(8,13,26,0.15) 50%, rgba(8,13,26,0.5) 100%)" }} />
+    <main className="min-h-screen w-full flex flex-col md:flex-row overflow-hidden">
 
-        <div className="relative flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="text-white font-semibold">Navkar Impex</span>
-        </div>
-
-        <div className="relative">
-          <p className="text-[#C9A452] text-xs font-semibold uppercase tracking-widest mb-4">Portal Access</p>
-          <h2 className="font-display text-4xl font-light text-white leading-tight mb-4">
-            Your Cargo.<br />Always in<br />
-            <span style={{ color: "#C9A452" }}>Safe Hands.</span>
-          </h2>
-          <div className="w-10 h-px bg-[#C9A452] mb-6" />
-          <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
-            Track shipments, view invoices, download documents and request quotes — all in one portal.
-          </p>
-        </div>
-
-        <div className="relative grid grid-cols-3 gap-3">
-          {[["500+", "Clients"], ["10K+", "Shipments"], ["50+", "Countries"]].map(([v, l]) => (
-            <div key={l} className="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
-              <div className="font-display text-xl text-[#C9A452]">{v}</div>
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{l}</div>
-            </div>
-          ))}
-        </div>
+      {/* ── Logo — fixed top-left ── */}
+      <div className="fixed top-6 left-6 md:top-8 md:left-10 z-50 flex items-center gap-3">
+        <NavkarLogo variant="symbol" symbolSize={40} />
+        <NavkarLogo variant="wordmark" className="h-9 w-auto" />
       </div>
 
-      {/* Right: form */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-14 relative z-10">
-        <div className="w-full max-w-sm">
+      {/* ── Left visual side: 3/5 width ── */}
+      <section
+        className="hidden md:flex md:w-3/5 relative items-center justify-center overflow-hidden p-20"
+        style={{ backgroundColor: "#f9f9f9" }}>
+
+        {/* Giant watermark */}
+        <div
+          className="absolute -left-10 bottom-0 pointer-events-none select-none overflow-hidden leading-none"
+          style={{ opacity: 0.03 }}>
+          <span
+            className="font-display font-bold"
+            style={{ fontSize: "clamp(160px, 18vw, 320px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
+            NAVKAR
+          </span>
+        </div>
+
+        {/* Floating 3D logistics sphere */}
+        <div className="login-float relative w-full max-w-[520px] aspect-square z-10">
+          <img
+            ref={imgRef}
+            src={HERO_IMG}
+            alt="Global Logistics Network"
+            className="w-full h-full object-contain"
+            style={{ filter: "grayscale(100%) brightness(108%) contrast(120%)" }}
+          />
+        </div>
+
+        {/* Bottom branding */}
+        <div className="absolute bottom-20 left-20 max-w-xs z-10">
+          <p
+            className="font-mono text-[10px] tracking-[0.28em] mb-4"
+            style={{ color: "#76777d" }}>
+            EST. 2026
+          </p>
+          <h3
+            className="font-sans font-bold text-primary mb-3"
+            style={{ fontSize: "17px", letterSpacing: "0.06em" }}>
+            PRECISION REFINED.
+          </h3>
+          <p
+            className="font-sans text-sm leading-relaxed"
+            style={{ color: "rgba(69,70,77,0.7)" }}>
+            Empowering global trade through surgical logistics execution and
+            unshakeable freight architecture.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Right form side: 2/5 width ── */}
+      <section className="w-full md:w-2/5 min-h-screen bg-white flex flex-col justify-center px-6 md:px-20 py-20 relative">
+        <div className="max-w-[380px] w-full mx-auto md:mx-0">
 
           {/* Mobile logo */}
-          <div className="flex lg:hidden items-center gap-2 mb-8 justify-center">
-            <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <span className="font-semibold text-gray-900">Navkar Impex</span>
+          <div className="flex md:hidden items-center gap-3 mb-10 mt-24">
+            <NavkarLogo variant="symbol" symbolSize={40} />
+            <NavkarLogo variant="wordmark" className="h-9 w-auto" />
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h1>
-          <p className="text-sm text-gray-500 mb-8">Sign in to continue to your portal</p>
-
-          {/* Quick demo */}
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2">Demo Access</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => quickLogin("admin")} disabled={loading}
-                className="border border-gray-200 rounded-lg px-3 py-2.5 text-left hover:border-[#C9A452]/40
-                           hover:bg-[#C9A452]/5 transition-all disabled:opacity-50 group bg-white">
-                <div className="text-[10px] text-gray-400 mb-0.5 uppercase tracking-wide">Business</div>
-                <div className="text-xs font-semibold text-[#C9A452] flex items-center gap-1
-                                group-hover:gap-1.5 transition-all">
-                  Quick Login <ArrowRight size={11} />
-                </div>
-              </button>
-              <button onClick={() => quickLogin("client")} disabled={loading}
-                className="border border-gray-200 rounded-lg px-3 py-2.5 text-left hover:border-gray-300
-                           hover:bg-gray-50 transition-all disabled:opacity-50 group bg-white">
-                <div className="text-[10px] text-gray-400 mb-0.5 uppercase tracking-wide">Client</div>
-                <div className="text-xs font-semibold text-gray-700 flex items-center gap-1
-                                group-hover:gap-1.5 transition-all">
-                  Quick Login <ArrowRight size={11} />
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400">or sign in with email</span>
-            <div className="flex-1 h-px bg-gray-200" />
-          </div>
+          {/* Heading */}
+          <header className="mb-12">
+            <span
+              className="font-mono text-[11px] tracking-widest block mb-3"
+              style={{ color: "#735c00" }}>
+              PORTAL ACCESS
+            </span>
+            <h2
+              className="font-display text-primary"
+              style={{
+                fontSize: "clamp(44px, 5.5vw, 64px)",
+                fontWeight: 600,
+                lineHeight: "115%",
+                letterSpacing: "-0.02em",
+              }}>
+              Sign In
+            </h2>
+          </header>
 
           {/* Form */}
-          <form onSubmit={login} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
-                Email Address
+          <form onSubmit={login} className="space-y-10">
+
+            {/* Email */}
+            <div className="relative">
+              <label
+                className="font-mono text-[11px] tracking-[0.1em] block mb-2 transition-colors duration-200"
+                style={{ color: emailFocused ? "#000000" : "#c6c6cd" }}>
+                EMAIL ADDRESS
               </label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                           placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                           focus:border-[#C9A452]/50 bg-white transition-all"
-                placeholder="you@company.com" required autoFocus />
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Password
-                </label>
-                <Link href="/forgot-password" className="text-[11px] text-[#C9A452] hover:underline">
-                  Forgot?
-                </Link>
-              </div>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                           placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                           focus:border-[#C9A452]/50 bg-white transition-all"
-                placeholder="••••••••" required />
+              <input
+                type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="username@domain.com" required autoFocus
+                className="w-full bg-transparent border-0 border-b py-4 px-0 text-lg text-primary focus:ring-0 focus:outline-none font-sans placeholder:opacity-30"
+                style={{ borderBottom: "1px solid #c6c6cd", borderRadius: 0 }}
+                onFocus={() => setEmailFocused(true)}
+                onBlur={() => setEmailFocused(false)}
+              />
+              <div
+                className="absolute bottom-0 left-0 h-px bg-primary"
+                style={{ width: emailFocused ? "100%" : "0%", transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }}
+              />
             </div>
 
+            {/* Password */}
+            <div className="relative">
+              <div className="flex justify-between items-end mb-2">
+                <label
+                  className="font-mono text-[11px] tracking-[0.1em] transition-colors duration-200"
+                  style={{ color: passFocused ? "#000000" : "#c6c6cd" }}>
+                  PASSWORD
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="font-mono text-[11px] tracking-widest underline underline-offset-4 decoration-1 hover:text-primary transition-colors"
+                  style={{ color: "#735c00" }}>
+                  FORGOT?
+                </Link>
+              </div>
+              <input
+                type="password" value={password} onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••" required
+                className="w-full bg-transparent border-0 border-b py-4 px-0 text-lg text-primary focus:ring-0 focus:outline-none font-sans placeholder:opacity-30"
+                style={{ borderBottom: "1px solid #c6c6cd", borderRadius: 0 }}
+                onFocus={() => setPassFocused(true)}
+                onBlur={() => setPassFocused(false)}
+              />
+              <div
+                className="absolute bottom-0 left-0 h-px bg-primary"
+                style={{ width: passFocused ? "100%" : "0%", transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }}
+              />
+            </div>
+
+            {/* Error */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg px-3.5 py-2.5 text-sm text-red-600">
+              <div
+                className="pl-4 py-2.5 text-sm font-sans"
+                style={{ borderLeft: "2px solid #ba1a1a", backgroundColor: "#fff8f8", color: "#ba1a1a" }}>
                 {error}
               </div>
             )}
 
-            <button type="submit" disabled={loading}
-              className="w-full bg-gray-900 text-white font-semibold py-3 rounded-lg hover:bg-gray-800
-                         transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center
-                         justify-center gap-2 text-sm">
-              {loading ? (
-                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Signing in…</>
-              ) : (
-                <>Sign In <ArrowRight size={15} /></>
-              )}
-            </button>
+            {/* Submit */}
+            <div className="pt-6">
+              <button
+                type="submit" disabled={loading}
+                className="inline-flex items-center gap-4 bg-primary text-on-primary py-4 px-12 font-mono text-[11px] transition-all duration-300 hover:tracking-[0.18em] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ letterSpacing: "0.08em" }}>
+                {loading ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    SIGNING IN
+                  </>
+                ) : (
+                  <><span>LOG IN</span><span>→</span></>
+                )}
+              </button>
+            </div>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-[#C9A452] font-semibold hover:underline">Sign up free</Link>
-          </p>
-
-          <p className="text-center text-xs text-gray-400 mt-8">
-            © {new Date().getFullYear()} Navkar Impex
-          </p>
+          {/* Footer */}
+          <footer
+            className="mt-20 pt-10"
+            style={{ borderTop: "1px solid rgba(198,198,205,0.3)" }}>
+            <p className="font-sans text-sm mb-4" style={{ color: "#45464d" }}>
+              New to the network?
+            </p>
+            <Link href="/signup" className="inline-flex items-center gap-2 group">
+              <span className="font-sans font-bold text-xl text-primary transition-all duration-200 group-hover:pr-2">
+                Create an account
+              </span>
+              <span style={{ color: "#735c00", fontSize: "18px" }}>↗</span>
+            </Link>
+          </footer>
         </div>
-      </div>
-    </div>
+
+        {/* Ghost watermark bottom-right */}
+        <div
+          className="absolute right-0 bottom-0 pointer-events-none select-none overflow-hidden"
+          style={{ opacity: 0.025 }}>
+          <span
+            className="font-display font-bold"
+            style={{ fontSize: "300px", lineHeight: 1, letterSpacing: "-0.04em" }}>
+            G
+          </span>
+        </div>
+      </section>
+    </main>
   );
 }

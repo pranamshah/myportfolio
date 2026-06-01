@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Search } from "lucide-react";
+import Link from "next/link";
 import Modal from "@/components/ui/Modal";
 import { formatDate } from "@/lib/utils";
 
@@ -60,7 +61,7 @@ export default function ClientsPage() {
       </div>
 
       <div className="relative max-w-sm">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search clients..." className="input-luxury pl-9" />
       </div>
 
@@ -81,23 +82,26 @@ export default function ClientsPage() {
           <tbody>
             {filtered.map(c => (
               <tr key={c._id}>
-                <td className="font-medium text-sm text-ink">{c.name}</td>
-                <td className="text-sm text-ink-secondary">{c.company || "—"}</td>
-                <td className="text-sm text-ink-secondary">{c.email}</td>
-                <td className="text-sm text-ink-secondary">{c.phone || "—"}</td>
-                <td className="text-xs text-ink-muted">{c.gst || "—"}</td>
+                <td className="font-medium text-sm text-black">{c.name}</td>
+                <td className="text-sm text-black/60">{c.company || "—"}</td>
+                <td className="text-sm text-black/60">{c.email}</td>
+                <td className="text-sm text-black/60">{c.phone || "—"}</td>
+                <td className="text-xs text-black/40">{c.gst || "—"}</td>
                 <td>
-                  <span className={`status-badge text-xs ${c.isActive ? "bg-green-900/30 text-green-400 border-green-700" : "bg-surface-hover text-ink-muted border-surface-hover"}`}>
+                  <span className={`status-badge ${c.isActive ? "border-0 text-black font-bold" : "border border-black/10 text-black/30"}`} style={c.isActive ? { backgroundColor: "#735c00", color: "#000" } : undefined}>
                     {c.isActive ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td className="text-xs text-ink-muted">{formatDate(c.createdAt)}</td>
+                <td className="text-xs text-black/40">{formatDate(c.createdAt)}</td>
                 <td>
-                  <button onClick={() => openEdit(c)} className="text-xs text-gold hover:text-gold-light transition-colors">Edit</button>
+                  <div className="flex items-center gap-3">
+                    <Link href={`/dashboard/admin/clients/${c._id}`} className="text-xs font-bold uppercase tracking-widest font-mono hover:text-black transition-colors" style={{ color: "#735c00" }}>View</Link>
+                    <button onClick={() => openEdit(c)} className="text-xs text-black/40 hover:text-black transition-colors">Edit</button>
+                  </div>
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && <tr><td colSpan={8} className="text-center text-ink-muted py-10">No clients found.</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={8} className="text-center text-black/40 py-10">No clients found.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -128,10 +132,10 @@ export default function ClientsPage() {
           </div>
           <div className="flex items-center gap-3">
             <input type="checkbox" id="active" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} className="accent-gold" />
-            <label htmlFor="active" className="text-sm text-ink-secondary">Active</label>
+            <label htmlFor="active" className="text-sm text-black/60">Active</label>
           </div>
         </div>
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-surface-hover">
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-black/10">
           <button onClick={() => { setShowModal(false); setEditId(null); }} className="btn-ghost text-sm">Cancel</button>
           <button onClick={save} disabled={saving || !form.name || !form.email || (!editId && !form.password)} className="btn-gold text-sm disabled:opacity-50">
             {saving ? "Saving..." : editId ? "Update Client" : "Add Client"}

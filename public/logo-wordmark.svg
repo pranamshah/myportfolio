@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&amp;display=swap');
+    </style>
+  </defs>
+  <!-- NAVKAR -->
+  <text x="400" y="118"
+    font-family="'Montserrat','Arial Black','Impact',sans-serif"
+    font-size="114"
+    font-weight="900"
+    letter-spacing="30"
+    fill="#142850"
+    text-anchor="middle">NAVKAR</text>
+  <!-- Left rule -->
+  <line x1="62"  y1="154" x2="296" y2="154" stroke="#999" stroke-width="1.8"/>
+  <!-- IMPEX -->
+  <text x="400" y="174"
+    font-family="'Montserrat','Arial',sans-serif"
+    font-size="34"
+    font-weight="400"
+    letter-spacing="16"
+    fill="#888888"
+    text-anchor="middle">IMPEX</text>
+  <!-- Right rule -->
+  <line x1="504" y1="154" x2="738" y2="154" stroke="#999" stroke-width="1.8"/>
+</svg>

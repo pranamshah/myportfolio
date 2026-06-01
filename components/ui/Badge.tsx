@@ -1,8 +1,12 @@
 import { STATUS_COLOR, STATUS_LABEL } from "@/lib/utils";
 
 export function StatusBadge({ status }: { status: string }) {
+  const isCustoms = status === "UNDER_CUSTOMS_EXAM" || status === "CUSTOMS_CLEARED";
   return (
-    <span className={`status-badge ${STATUS_COLOR[status] || "bg-surface-card text-ink-secondary border-surface-hover"}`}>
+    <span
+      className={`status-badge ${STATUS_COLOR[status] || "border border-black/10 text-black/40"}`}
+      style={isCustoms ? { backgroundColor: "#735c00" } : undefined}
+    >
       {STATUS_LABEL[status] || status}
     </span>
   );
@@ -10,22 +14,36 @@ export function StatusBadge({ status }: { status: string }) {
 
 export function InvoiceBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    DRAFT: "bg-surface-hover text-ink-secondary border-surface-hover",
-    SENT: "bg-blue-900/40 text-blue-300 border-blue-700",
-    PAID: "bg-green-900/40 text-green-300 border-green-700",
-    OVERDUE: "bg-red-900/40 text-red-300 border-red-700",
-    CANCELLED: "bg-surface-card text-ink-muted border-surface-hover",
+    DRAFT:     "border border-black/20 text-black/50",
+    SENT:      "border border-black text-black",
+    PAID:      "border-0 text-black font-bold",
+    OVERDUE:   "border border-red-600 text-red-600",
+    CANCELLED: "border border-black/10 text-black/30",
   };
-  return <span className={`status-badge ${map[status] || ""}`}>{status}</span>;
+  return (
+    <span
+      className={`status-badge ${map[status] || "border border-black/10 text-black/40"}`}
+      style={status === "PAID" ? { backgroundColor: "#735c00", color: "#000" } : undefined}
+    >
+      {status}
+    </span>
+  );
 }
 
 export function QuoteBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    PENDING: "bg-yellow-900/40 text-yellow-300 border-yellow-700",
-    QUOTED: "bg-blue-900/40 text-blue-300 border-blue-700",
-    ACCEPTED: "bg-green-900/40 text-green-300 border-green-700",
-    REJECTED: "bg-red-900/40 text-red-300 border-red-700",
-    EXPIRED: "bg-surface-card text-ink-muted border-surface-hover",
+    PENDING:  "border border-black text-black",
+    QUOTED:   "border border-black text-black",
+    ACCEPTED: "border-0 text-black font-bold",
+    REJECTED: "border border-red-600 text-red-600",
+    EXPIRED:  "border border-black/10 text-black/30",
   };
-  return <span className={`status-badge ${map[status] || ""}`}>{status}</span>;
+  return (
+    <span
+      className={`status-badge ${map[status] || "border border-black/10 text-black/40"}`}
+      style={status === "ACCEPTED" ? { backgroundColor: "#735c00", color: "#000" } : undefined}
+    >
+      {status}
+    </span>
+  );
 }

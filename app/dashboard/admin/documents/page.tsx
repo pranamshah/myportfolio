@@ -32,12 +32,12 @@ export default function DocumentsPage() {
       <div>
         <p className="section-heading">Document Archive</p>
         <h1 className="page-heading">All Documents</h1>
-        <p className="text-ink-muted text-sm mt-1">Documents are never deleted. Upload from individual shipment pages.</p>
+        <p className="text-black/40 text-sm mt-1">Documents are never deleted. Upload from individual shipment pages.</p>
       </div>
 
       <div className="flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search documents..." className="input-luxury pl-9" />
         </div>
         <select value={catFilter} onChange={e => setCatFilter(e.target.value)} className="input-luxury w-auto min-w-[160px]">
@@ -63,31 +63,31 @@ export default function DocumentsPage() {
             {filtered.map(d => (
               <tr key={d._id}>
                 <td>
-                  <div className="text-sm text-ink font-medium">{d.name}</div>
-                  <div className="text-xs text-ink-muted">{d.originalName}</div>
-                  {d.description && <div className="text-xs text-ink-muted">{d.description}</div>}
+                  <div className="text-sm text-black font-medium">{d.name}</div>
+                  <div className="text-xs text-black/40">{d.originalName}</div>
+                  {d.description && <div className="text-xs text-black/40">{d.description}</div>}
                 </td>
                 <td>
-                  <div className="text-sm text-ink">{d.shipment?.shipmentId}</div>
-                  <div className="text-xs text-ink-muted truncate max-w-[140px]">{d.shipment?.description}</div>
+                  <div className="text-sm text-black">{d.shipment?.shipmentId}</div>
+                  <div className="text-xs text-black/40 truncate max-w-[140px]">{d.shipment?.description}</div>
                 </td>
-                <td><span className="text-xs bg-surface-hover px-2 py-0.5 rounded text-ink-secondary">{d.category}</span></td>
-                <td className="text-xs text-ink-muted">{(d.fileSize / 1024).toFixed(0)} KB</td>
+                <td><span className="text-xs bg-black/5 px-2 py-0.5 rounded text-black/60">{d.category}</span></td>
+                <td className="text-xs text-black/40">{(d.fileSize / 1024).toFixed(0)} KB</td>
                 <td>
                   {d.isVisibleToClient
                     ? <CheckCircle size={14} className="text-green-400" />
-                    : <XCircle size={14} className="text-ink-muted" />}
+                    : <XCircle size={14} className="text-black/40" />}
                 </td>
-                <td className="text-xs text-ink-secondary">{d.uploadedBy?.name}</td>
-                <td className="text-xs text-ink-muted">{formatDate(d.createdAt)}</td>
+                <td className="text-xs text-black/60">{d.uploadedBy?.name}</td>
+                <td className="text-xs text-black/40">{formatDate(d.createdAt)}</td>
                 <td>
-                  <a href={d.filePath} target="_blank" className="inline-flex items-center gap-1 text-xs text-gold hover:text-gold-light transition-colors">
+                  <a href={d.filePath} target="_blank" className="inline-flex items-center gap-1 text-xs text-secondary hover:text-black transition-colors">
                     <Download size={12} /> Download
                   </a>
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && <tr><td colSpan={8} className="text-center text-ink-muted py-10">No documents found.</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={8} className="text-center text-black/40 py-10">No documents found.</td></tr>}
           </tbody>
         </table>
       </div>

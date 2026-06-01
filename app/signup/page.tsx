@@ -1,28 +1,45 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Building2, User } from "lucide-react";
-import GlobeCanvas from "@/components/public/GlobeCanvas";
+import NavkarLogo from "@/components/NavkarLogo";
+
+const CLIENT_IMG =
+  "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?w=600&fit=crop&q=80";
+
+const BUSINESS_IMG =
+  "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&fit=crop&q=80";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [accountType, setAccountType] = useState<"business" | "client">("client");
-  const [form, setForm] = useState({ name: "", company: "", email: "", phone: "", password: "", confirm: "" });
-  const [error, setError] = useState("");
+  const [accountType, setAccountType] = useState<"business" | "client" | null>(null);
+  const [formVisible, setFormVisible] = useState(false);
+  const [form, setForm] = useState({
+    name: "", company: "", email: "", phone: "", password: "", confirm: "",
+  });
+  const [error, setError]   = useState("");
   const [loading, setLoading] = useState(false);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
+  function selectType(type: "business" | "client") {
+    setAccountType(type);
+    if (!formVisible) setFormVisible(true);
+    setTimeout(() => {
+      document.getElementById("reg-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 320);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!accountType) return;
     if (form.password !== form.confirm) { setError("Passwords do not match."); return; }
-    if (form.password.length < 8) { setError("Password must be at least 8 characters."); return; }
+    if (form.password.length < 8)       { setError("Password must be at least 8 characters."); return; }
 
     setLoading(true);
     setError("");
-
     try {
       const res = await fetch("/api/register", {
         method: "POST",
@@ -33,20 +50,17 @@ export default function SignupPage() {
           password: form.password, accountType,
         }),
       });
-
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Registration failed."); setLoading(false); return; }
 
       const signInRes = await signIn("credentials", {
         email: form.email, password: form.password, redirect: false,
       });
-
-      if (signInRes?.error) {
-        setError("Account created! Please sign in.");
-        router.push("/login");
-      } else {
-        router.push(accountType === "business" ? "/dashboard/admin" : "/dashboard/client");
-      }
+      router.push(
+        signInRes?.error
+          ? "/login"
+          : accountType === "business" ? "/dashboard/admin" : "/dashboard/client"
+      );
     } catch (err) {
       console.error(err);
       setError("Something went wrong. Please try again.");
@@ -55,177 +69,362 @@ export default function SignupPage() {
     }
   }
 
+  const fieldCls =
+    "w-full bg-transparent border-0 border-b py-4 px-0 text-base text-primary focus:ring-0 focus:outline-none font-sans placeholder:opacity-30";
+  const fieldStyle = { borderBottom: "1px solid #c6c6cd", borderRadius: 0 };
+  const onFocus = (e: React.FocusEvent<HTMLInputElement>) =>
+    (e.target.style.borderBottomColor = "#000000");
+  const onBlur  = (e: React.FocusEvent<HTMLInputElement>) =>
+    (e.target.style.borderBottomColor = "#c6c6cd");
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative" style={{ background: "linear-gradient(160deg, #080d1a 0%, #0d1630 100%)" }}>
-      {/* Globe background */}
-      <div className="absolute inset-0">
-        <GlobeCanvas cx={0.5} cy={0.45} radiusFactor={0.38} opacity={0.7} />
-      </div>
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(8,13,26,0.6) 100%)" }} />
-      <div className="w-full max-w-lg relative z-10">
+    <div className="min-h-screen bg-background text-on-surface overflow-x-hidden">
 
-        {/* Logo */}
-        <div className="flex items-center gap-2 justify-center mb-8">
-          <div className="w-7 h-7 rounded bg-[#C9A452] flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M3 17l5-10 4 6 3-4 4 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="font-semibold text-white">Navkar Impex</span>
+      {/* ── Nav ── */}
+      <nav
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-20 py-4"
+        style={{
+          backgroundColor: "rgba(249,249,249,0.88)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(198,198,205,0.3)",
+        }}>
+        <Link href="/" className="flex items-center gap-3">
+          <NavkarLogo variant="symbol" symbolSize={40} />
+          <NavkarLogo variant="wordmark" className="h-9 w-auto" />
+        </Link>
+        <div className="hidden md:flex items-center gap-8">
+          {["SEA", "AIR", "TRACKING", "ABOUT"].map(l => (
+            <a
+              key={l}
+              href={`/#${l.toLowerCase()}`}
+              className="font-mono text-[11px] tracking-[0.1em] text-on-surface-variant hover:text-primary transition-colors">
+              {l}
+            </a>
+          ))}
         </div>
+        <Link
+          href="/login"
+          className="font-mono text-[11px] tracking-[0.1em] border border-outline px-6 py-2.5 hover:bg-primary hover:text-on-primary transition-all duration-300">
+          LOGIN
+        </Link>
+      </nav>
 
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1 text-center">Create your account</h1>
-          <p className="text-sm text-gray-500 mb-8 text-center">Choose your account type to get started</p>
+      {/* ── Main ── */}
+      <main className="pt-36 pb-24 px-6 md:px-20 max-w-[1440px] mx-auto">
 
-          {/* Account Type Selector */}
-          <div className="grid grid-cols-2 gap-3 mb-8">
-            <button
-              type="button"
-              onClick={() => setAccountType("business")}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                accountType === "business"
-                  ? "border-[#C9A452] bg-[#C9A452]/5"
-                  : "border-gray-200 bg-gray-50 hover:border-gray-300"
-              }`}
-            >
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${
-                accountType === "business" ? "bg-[#C9A452]/15" : "bg-gray-200"
-              }`}>
-                <Building2 size={18} className={accountType === "business" ? "text-[#C9A452]" : "text-gray-500"} />
-              </div>
-              <div className={`text-sm font-semibold mb-0.5 ${accountType === "business" ? "text-gray-900" : "text-gray-600"}`}>
-                Business
-              </div>
-              <div className="text-[11px] text-gray-400 leading-snug">
-                Manage shipments, invoices & clients
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setAccountType("client")}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                accountType === "client"
-                  ? "border-[#C9A452] bg-[#C9A452]/5"
-                  : "border-gray-200 bg-gray-50 hover:border-gray-300"
-              }`}
-            >
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${
-                accountType === "client" ? "bg-[#C9A452]/15" : "bg-gray-200"
-              }`}>
-                <User size={18} className={accountType === "client" ? "text-[#C9A452]" : "text-gray-500"} />
-              </div>
-              <div className={`text-sm font-semibold mb-0.5 ${accountType === "client" ? "text-gray-900" : "text-gray-600"}`}>
-                Client
-              </div>
-              <div className="text-[11px] text-gray-400 leading-snug">
-                Track cargo, view invoices & docs
-              </div>
-            </button>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Full Name *</label>
-                <input
-                  className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                             placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                             focus:border-[#C9A452]/50 bg-white transition-all"
-                  placeholder="John Doe" required
-                  value={form.name} onChange={e => set("name", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Company *</label>
-                <input
-                  className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                             placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                             focus:border-[#C9A452]/50 bg-white transition-all"
-                  placeholder="ACME Pvt Ltd" required
-                  value={form.company} onChange={e => set("company", e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Email Address *</label>
-              <input
-                type="email"
-                className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                           placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                           focus:border-[#C9A452]/50 bg-white transition-all"
-                placeholder="you@company.com" required
-                value={form.email} onChange={e => set("email", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Phone Number *</label>
-              <input
-                type="tel"
-                className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                           placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                           focus:border-[#C9A452]/50 bg-white transition-all"
-                placeholder="+91 98765 43210" required
-                value={form.phone} onChange={e => set("phone", e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Password *</label>
-                <input
-                  type="password"
-                  className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                             placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                             focus:border-[#C9A452]/50 bg-white transition-all"
-                  placeholder="Min 8 chars" required
-                  value={form.password} onChange={e => set("password", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">Confirm *</label>
-                <input
-                  type="password"
-                  className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-900
-                             placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C9A452]/30
-                             focus:border-[#C9A452]/50 bg-white transition-all"
-                  placeholder="Repeat" required
-                  value={form.confirm} onChange={e => set("confirm", e.target.value)}
-                />
-              </div>
-            </div>
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg px-3.5 py-2.5 text-sm text-red-600">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit" disabled={loading}
-              className="w-full bg-gray-900 text-white font-semibold py-3 rounded-lg hover:bg-gray-800
-                         transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center
-                         justify-center gap-2 text-sm"
-            >
-              {loading ? (
-                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Creating account…</>
-              ) : (
-                <>Create {accountType === "business" ? "Business" : "Client"} Account <ArrowRight size={15} /></>
-              )}
-            </button>
-          </form>
-
-          <p className="text-center text-sm text-gray-500 mt-5">
-            Already have an account?{" "}
-            <Link href="/login" className="text-[#C9A452] font-semibold hover:underline">Sign in →</Link>
+        {/* Hero header */}
+        <header className="mb-20">
+          <span
+            className="font-mono text-[11px] tracking-[0.2em] block mb-5"
+            style={{ color: "#735c00" }}>
+            ESTABLISHED 2026
+          </span>
+          <h1
+            className="font-display text-primary mb-6"
+            style={{
+              fontSize: "clamp(40px, 6vw, 80px)",
+              fontWeight: 600,
+              lineHeight: "115%",
+              letterSpacing: "-0.02em",
+              maxWidth: "680px",
+            }}>
+            Precision Logistics Starts Here.
+          </h1>
+          <p className="font-sans text-lg text-on-surface-variant leading-relaxed max-w-lg">
+            Join the global network of Navkar Impex. Select your account type to
+            begin your journey with surgical freight accuracy.
           </p>
+        </header>
+
+        {/* ── Account type cards ── */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
+
+          {/* CLIENT */}
+          <div
+            onClick={() => selectType("client")}
+            className="group cursor-pointer border flex flex-col items-center text-center p-10 transition-all duration-500"
+            style={{
+              borderColor: accountType === "client" ? "#000000" : "rgba(198,198,205,0.5)",
+              backgroundColor: accountType === "client" ? "#ffffff" : "#f3f3f4",
+              transform: accountType === "client" ? "scale(1.02)" : "scale(1)",
+              boxShadow: accountType === "client" ? "0 20px 48px rgba(0,0,0,0.07)" : "none",
+            }}>
+            <div className="w-48 h-48 mb-8 overflow-hidden">
+              <img
+                src={CLIENT_IMG}
+                alt="Client — Import / Export Freight"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+            <h3
+              className="font-sans font-bold text-primary mb-2"
+              style={{ fontSize: "26px", letterSpacing: "0.05em" }}>
+              CLIENT
+            </h3>
+            <p
+              className="font-mono text-[11px] tracking-[0.15em] mb-4"
+              style={{ color: "#735c00" }}>
+              IMPORT / EXPORT FREIGHT
+            </p>
+            <p className="font-sans text-sm text-on-surface-variant leading-relaxed max-w-xs">
+              Global supply chain solutions for enterprises requiring sea, air,
+              and land logistics.
+            </p>
+          </div>
+
+          {/* BUSINESS */}
+          <div
+            onClick={() => selectType("business")}
+            className="group cursor-pointer border flex flex-col items-center text-center p-10 transition-all duration-500"
+            style={{
+              borderColor: accountType === "business" ? "#000000" : "rgba(198,198,205,0.5)",
+              backgroundColor: accountType === "business" ? "#ffffff" : "#f3f3f4",
+              transform: accountType === "business" ? "scale(1.02)" : "scale(1)",
+              boxShadow: accountType === "business" ? "0 20px 48px rgba(0,0,0,0.07)" : "none",
+            }}>
+            <div className="w-48 h-48 mb-8 overflow-hidden">
+              <img
+                src={BUSINESS_IMG}
+                alt="Business — Invoicing & Documents"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+            <h3
+              className="font-sans font-bold text-primary mb-2"
+              style={{ fontSize: "26px", letterSpacing: "0.05em" }}>
+              BUSINESS
+            </h3>
+            <p
+              className="font-mono text-[11px] tracking-[0.15em] mb-4"
+              style={{ color: "#735c00" }}>
+              INVOICING &amp; DOCUMENTS
+            </p>
+            <p className="font-sans text-sm text-on-surface-variant leading-relaxed max-w-xs">
+              For partners focusing on document management, customs clearance,
+              and fiscal logistics.
+            </p>
+          </div>
+        </section>
+
+        {/* ── Registration form (expands after card selection) ── */}
+        <div
+          id="reg-form"
+          style={{
+            maxHeight: formVisible ? "1400px" : "0px",
+            opacity:   formVisible ? 1 : 0,
+            overflow:  "hidden",
+            transition: "max-height 0.6s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease",
+          }}>
+          <div className="border-t pt-16 max-w-4xl" style={{ borderColor: "#c6c6cd" }}>
+
+            <div className="mb-12">
+              <h2
+                className="font-sans font-bold text-primary mb-2"
+                style={{ fontSize: "26px", letterSpacing: "0.02em" }}>
+                Complete Registration
+              </h2>
+              <p className="font-sans text-sm text-on-surface-variant">
+                {accountType === "client"
+                  ? "Streamline your import/export operations with our specialised tools."
+                  : "Manage global invoicing and customs documentation with surgical precision."}
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-12">
+
+              {/* Full Name */}
+              <div className="relative pt-5">
+                <label
+                  className="font-mono text-[11px] tracking-[0.1em] absolute top-0 left-0"
+                  style={{ color: "#735c00" }}>
+                  FULL NAME
+                </label>
+                <input
+                  className={fieldCls} style={fieldStyle}
+                  onFocus={onFocus} onBlur={onBlur}
+                  placeholder="John Doe" required
+                  value={form.name} onChange={e => set("name", e.target.value)} />
+              </div>
+
+              {/* Email */}
+              <div className="relative pt-5">
+                <label
+                  className="font-mono text-[11px] tracking-[0.1em] absolute top-0 left-0"
+                  style={{ color: "#735c00" }}>
+                  EMAIL ADDRESS
+                </label>
+                <input
+                  type="email"
+                  className={fieldCls} style={fieldStyle}
+                  onFocus={onFocus} onBlur={onBlur}
+                  placeholder="john@example.com" required
+                  value={form.email} onChange={e => set("email", e.target.value)} />
+              </div>
+
+              {/* Company */}
+              <div className="relative pt-5">
+                <label
+                  className="font-mono text-[11px] tracking-[0.1em] absolute top-0 left-0"
+                  style={{ color: "#735c00" }}>
+                  COMPANY NAME
+                </label>
+                <input
+                  className={fieldCls} style={fieldStyle}
+                  onFocus={onFocus} onBlur={onBlur}
+                  placeholder="Navkar Global Ltd." required
+                  value={form.company} onChange={e => set("company", e.target.value)} />
+              </div>
+
+              {/* Phone */}
+              <div className="relative pt-5">
+                <label
+                  className="font-mono text-[11px] tracking-[0.1em] absolute top-0 left-0"
+                  style={{ color: "#735c00" }}>
+                  PHONE NUMBER
+                </label>
+                <input
+                  type="tel"
+                  className={fieldCls} style={fieldStyle}
+                  onFocus={onFocus} onBlur={onBlur}
+                  placeholder="+91 98765 43210" required
+                  value={form.phone} onChange={e => set("phone", e.target.value)} />
+              </div>
+
+              {/* Password */}
+              <div className="relative pt-5">
+                <label
+                  className="font-mono text-[11px] tracking-[0.1em] absolute top-0 left-0"
+                  style={{ color: "#735c00" }}>
+                  PASSWORD
+                </label>
+                <input
+                  type="password"
+                  className={fieldCls} style={fieldStyle}
+                  onFocus={onFocus} onBlur={onBlur}
+                  placeholder="Min 8 characters" required
+                  value={form.password} onChange={e => set("password", e.target.value)} />
+              </div>
+
+              {/* Confirm password */}
+              <div className="relative pt-5">
+                <label
+                  className="font-mono text-[11px] tracking-[0.1em] absolute top-0 left-0"
+                  style={{ color: "#735c00" }}>
+                  CONFIRM PASSWORD
+                </label>
+                <input
+                  type="password"
+                  className={fieldCls} style={fieldStyle}
+                  onFocus={onFocus} onBlur={onBlur}
+                  placeholder="Repeat password" required
+                  value={form.confirm} onChange={e => set("confirm", e.target.value)} />
+              </div>
+
+              {/* Error + submit row */}
+              <div className="col-span-full pt-10 flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
+                <div className="flex-1">
+                  {error ? (
+                    <div
+                      className="pl-4 py-2.5 text-sm font-sans"
+                      style={{ borderLeft: "2px solid #ba1a1a", backgroundColor: "#fff8f8", color: "#ba1a1a" }}>
+                      {error}
+                    </div>
+                  ) : (
+                    <p className="font-sans text-sm text-on-surface-variant leading-relaxed max-w-md">
+                      By creating an account you agree to our{" "}
+                      <Link href="/terms" className="text-primary underline underline-offset-4 decoration-1">Terms of Service</Link>
+                      {" "}and{" "}
+                      <Link href="/privacy" className="text-primary underline underline-offset-4 decoration-1">Privacy Policy</Link>.
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="submit" disabled={loading}
+                  className="shrink-0 inline-flex items-center justify-center gap-3 font-mono text-[11px] tracking-[0.15em] py-4 px-12 transition-all duration-300 hover:opacity-80 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: "#000000", color: "#ffffff" }}>
+                  {loading ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      CREATING ACCOUNT
+                    </>
+                  ) : (
+                    `CREATE ${(accountType ?? "").toUpperCase()} ACCOUNT`
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
+
+        {/* Already have account */}
+        <p className="mt-16 font-sans text-sm text-on-surface-variant">
+          Already have an account?{" "}
+          <Link href="/login" className="text-primary font-semibold hover:underline">
+            Sign in →
+          </Link>
+        </p>
+      </main>
+
+      {/* Fixed watermark */}
+      <div
+        className="fixed bottom-0 right-0 pointer-events-none select-none overflow-hidden z-0"
+        style={{ opacity: 0.03 }}>
+        <span
+          className="font-display font-bold"
+          style={{ fontSize: "clamp(160px, 18vw, 260px)", lineHeight: 1, letterSpacing: "-0.04em" }}>
+          NAVKAR
+        </span>
       </div>
+
+      {/* ── Footer ── */}
+      <footer
+        className="relative z-10 border-t"
+        style={{ backgroundColor: "#f9f9f9", borderColor: "#c6c6cd" }}>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 px-6 md:px-20 pt-20 pb-10 max-w-[1440px] mx-auto">
+
+          <div className="md:col-span-6">
+            <div className="mb-6 opacity-10">
+              <NavkarLogo variant="wordmark" className="h-14 w-auto" />
+            </div>
+            <p className="font-sans text-sm text-on-surface-variant max-w-sm leading-relaxed">
+              Global logistics redefined through surgical precision and
+              avant-garde architectural efficiency.
+            </p>
+          </div>
+
+          <div className="md:col-span-3 flex flex-col gap-4">
+            <span className="font-mono text-[11px] tracking-[0.1em]" style={{ color: "#735c00" }}>
+              NETWORK
+            </span>
+            <Link href="/network" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
+              GLOBAL NETWORK
+            </Link>
+            <Link href="/network#careers" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
+              CAREERS
+            </Link>
+          </div>
+
+          <div className="md:col-span-3 flex flex-col gap-4">
+            <span className="font-mono text-[11px] tracking-[0.1em]" style={{ color: "#735c00" }}>
+              LEGAL
+            </span>
+            <Link href="/privacy" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
+              PRIVACY
+            </Link>
+            <Link href="/terms" className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors">
+              TERMS
+            </Link>
+          </div>
+
+          <div
+            className="col-span-full mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4"
+            style={{ borderTop: "1px solid rgba(198,198,205,0.2)" }}>
+            <span className="font-mono text-[10px] tracking-widest text-on-surface-variant/50">
+              © {new Date().getFullYear()} NAVKAR IMPEX. LOGISTICS REDEFINED.
+            </span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -62,14 +62,14 @@ export const STATUS_LABEL: Record<string, string> = {
 };
 
 export const STATUS_COLOR: Record<string, string> = {
-  BOOKING_CONFIRMED: "bg-blue-900/40 text-blue-300 border-blue-700",
-  CARGO_PICKED_UP: "bg-yellow-900/40 text-yellow-300 border-yellow-700",
-  AT_CFS: "bg-orange-900/40 text-orange-300 border-orange-700",
-  ON_VESSEL: "bg-purple-900/40 text-purple-300 border-purple-700",
-  IN_TRANSIT: "bg-indigo-900/40 text-indigo-300 border-indigo-700",
-  ARRIVED_AT_PORT: "bg-teal-900/40 text-teal-300 border-teal-700",
-  UNDER_CUSTOMS_EXAM: "bg-red-900/40 text-red-300 border-red-700",
-  CUSTOMS_CLEARED: "bg-green-900/40 text-green-300 border-green-700",
-  DELIVERED: "bg-emerald-900/40 text-emerald-300 border-emerald-700",
-  COMPLETED: "bg-surface-card text-ink-secondary border-surface-hover",
+  BOOKING_CONFIRMED: "border border-black/30 text-black/70",
+  CARGO_PICKED_UP:   "bg-black text-white border-black",
+  AT_CFS:            "bg-black text-white border-black",
+  ON_VESSEL:         "bg-black text-white border-black",
+  IN_TRANSIT:        "bg-black text-white border-black",
+  ARRIVED_AT_PORT:   "bg-black text-white border-black",
+  UNDER_CUSTOMS_EXAM:"border-0 text-black font-bold",
+  CUSTOMS_CLEARED:   "border-0 text-black font-bold",
+  DELIVERED:         "border border-black/20 text-black/50",
+  COMPLETED:         "border border-black/10 text-black/30",
 };

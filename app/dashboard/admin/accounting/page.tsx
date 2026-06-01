@@ -102,7 +102,8 @@ export default function AccountingPage() {
     else alert(data.error || "Error saving ledger");
   }
 
-  const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tabs: { id: Tab; label: string; icon: React.ComponentType<any> }[] = [
     { id: "vouchers", label: "Vouchers", icon: BookOpen },
     { id: "ledgers", label: "Ledgers", icon: Scale },
     { id: "daybook", label: "Day Book", icon: Calendar },
@@ -129,9 +130,9 @@ export default function AccountingPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-surface-hover pb-0 overflow-x-auto">
+      <div className="flex gap-1 border-b border-black/10 pb-0 overflow-x-auto">
         {tabs.map(({ id, label, icon: Icon }) => (
-          <button key={id} onClick={() => setTab(id)} className={`flex items-center gap-2 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-all ${tab === id ? "border-gold text-gold" : "border-transparent text-ink-muted hover:text-ink"}`}>
+          <button key={id} onClick={() => setTab(id)} className={`flex items-center gap-2 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-all ${tab === id ? "border-gold text-gold" : "border-transparent text-black/40 hover:text-black"}`}>
             <Icon size={13} />{label}
           </button>
         ))}
@@ -139,7 +140,7 @@ export default function AccountingPage() {
 
       {/* Date Range */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 text-sm text-ink-secondary">
+        <div className="flex items-center gap-2 text-sm text-black/60">
           <span>From</span>
           <input type="date" value={dateRange.from} onChange={e => setDateRange(d => ({ ...d, from: e.target.value }))} className="input-luxury py-1.5 w-36" />
           <span>To</span>
@@ -169,17 +170,17 @@ export default function AccountingPage() {
                 const crs = v.entries.filter(e => e.type === "CR");
                 return (
                   <tr key={v._id}>
-                    <td className="font-medium text-sm text-ink">{v.voucherNo}</td>
-                    <td><span className="text-xs bg-surface-hover px-2 py-0.5 rounded text-ink-secondary">{v.voucherType}</span></td>
-                    <td className="text-xs text-ink-muted">{formatDate(v.date)}</td>
-                    <td className="text-xs text-ink-secondary max-w-[160px]"><div className="truncate">{v.narration}</div></td>
-                    <td className="text-xs text-ink-secondary">{drs.map(e => e.ledgerName).join(", ")}</td>
-                    <td className="text-xs text-ink-secondary">{crs.map(e => e.ledgerName).join(", ")}</td>
+                    <td className="font-medium text-sm text-black">{v.voucherNo}</td>
+                    <td><span className="text-xs bg-black/5 px-2 py-0.5 rounded text-black/60">{v.voucherType}</span></td>
+                    <td className="text-xs text-black/40">{formatDate(v.date)}</td>
+                    <td className="text-xs text-black/60 max-w-[160px]"><div className="truncate">{v.narration}</div></td>
+                    <td className="text-xs text-black/60">{drs.map(e => e.ledgerName).join(", ")}</td>
+                    <td className="text-xs text-black/60">{crs.map(e => e.ledgerName).join(", ")}</td>
                     <td className="font-medium text-sm">{formatINR(v.totalAmount)}</td>
                   </tr>
                 );
               })}
-              {vouchers.length === 0 && <tr><td colSpan={7} className="text-center text-ink-muted py-10">No vouchers in this period.</td></tr>}
+              {vouchers.length === 0 && <tr><td colSpan={7} className="text-center text-black/40 py-10">No vouchers in this period.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -193,18 +194,18 @@ export default function AccountingPage() {
             <tbody>
               {ledgers.map(l => (
                 <tr key={l._id}>
-                  <td className="font-medium text-sm text-ink">{l.name}</td>
-                  <td className="text-xs text-ink-secondary">{l.group}</td>
-                  <td><span className="text-xs bg-surface-hover px-2 py-0.5 rounded text-ink-secondary">{l.type}</span></td>
-                  <td className="text-sm">{formatINR(l.openingBalance)} <span className="text-xs text-ink-muted">{l.openingType}</span></td>
+                  <td className="font-medium text-sm text-black">{l.name}</td>
+                  <td className="text-xs text-black/60">{l.group}</td>
+                  <td><span className="text-xs bg-black/5 px-2 py-0.5 rounded text-black/60">{l.type}</span></td>
+                  <td className="text-sm">{formatINR(l.openingBalance)} <span className="text-xs text-black/40">{l.openingType}</span></td>
                   <td>
-                    <button onClick={() => { setSelectedLedger(l._id); setTab("trial"); loadReport("ledger"); }} className="text-xs text-gold hover:text-gold-light transition-colors flex items-center gap-1">
+                    <button onClick={() => { setSelectedLedger(l._id); setTab("trial"); loadReport("ledger"); }} className="text-xs text-secondary hover:text-black transition-colors flex items-center gap-1">
                       Ledger <ChevronRight size={10} />
                     </button>
                   </td>
                 </tr>
               ))}
-              {ledgers.length === 0 && <tr><td colSpan={5} className="text-center text-ink-muted py-10">No ledgers. Add one to start.</td></tr>}
+              {ledgers.length === 0 && <tr><td colSpan={5} className="text-center text-black/40 py-10">No ledgers. Add one to start.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -213,24 +214,24 @@ export default function AccountingPage() {
       {/* Trial Balance */}
       {tab === "trial" && Array.isArray(report) && (
         <div className="card-luxury overflow-hidden">
-          <div className="px-5 py-3 border-b border-surface-hover flex items-center justify-between">
-            <h3 className="text-sm font-medium text-ink">Trial Balance</h3>
-            <span className="text-xs text-ink-muted">{formatDate(dateRange.from)} to {formatDate(dateRange.to)}</span>
+          <div className="px-5 py-3 border-b border-black/10 flex items-center justify-between">
+            <h3 className="text-sm font-medium text-black">Trial Balance</h3>
+            <span className="text-xs text-black/40">{formatDate(dateRange.from)} to {formatDate(dateRange.to)}</span>
           </div>
           <table className="table-luxury">
             <thead><tr><th>Ledger</th><th>Group</th><th>Type</th><th className="text-right">Debit (₹)</th><th className="text-right">Credit (₹)</th></tr></thead>
             <tbody>
               {(report as TrialRow[]).map((r, i) => (
                 <tr key={i}>
-                  <td className="text-sm text-ink">{r.name}</td>
-                  <td className="text-xs text-ink-secondary">{r.group}</td>
-                  <td className="text-xs text-ink-secondary">{r.type}</td>
+                  <td className="text-sm text-black">{r.name}</td>
+                  <td className="text-xs text-black/60">{r.group}</td>
+                  <td className="text-xs text-black/60">{r.type}</td>
                   <td className="text-right text-sm">{r.dr > 0 ? formatINR(r.dr) : "—"}</td>
                   <td className="text-right text-sm">{r.cr > 0 ? formatINR(r.cr) : "—"}</td>
                 </tr>
               ))}
-              <tr className="bg-surface-hover">
-                <td colSpan={3} className="font-semibold text-sm text-ink">Total</td>
+              <tr className="bg-black/5">
+                <td colSpan={3} className="font-semibold text-sm text-black">Total</td>
                 <td className="text-right font-semibold text-sm">{formatINR((report as TrialRow[]).reduce((s, r) => s + r.dr, 0))}</td>
                 <td className="text-right font-semibold text-sm">{formatINR((report as TrialRow[]).reduce((s, r) => s + r.cr, 0))}</td>
               </tr>
@@ -243,31 +244,31 @@ export default function AccountingPage() {
       {tab === "pl" && report && !Array.isArray(report) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card-luxury overflow-hidden">
-            <div className="px-5 py-3 border-b border-surface-hover bg-green-900/20">
+            <div className="px-5 py-3 border-b border-black/10 bg-green-900/20">
               <h3 className="text-sm font-medium text-green-400">Income</h3>
             </div>
             <table className="table-luxury">
               <thead><tr><th>Account</th><th>Group</th><th className="text-right">Amount (₹)</th></tr></thead>
               <tbody>
-                {(report as PLReport).income.map((r, i) => <tr key={i}><td className="text-sm text-ink">{r.name}</td><td className="text-xs text-ink-secondary">{r.group}</td><td className="text-right text-sm">{formatINR(r.amount)}</td></tr>)}
-                <tr className="bg-surface-hover"><td colSpan={2} className="font-semibold text-sm text-ink">Total Income</td><td className="text-right font-semibold text-sm text-green-400">{formatINR((report as PLReport).totalIncome)}</td></tr>
+                {(report as PLReport).income.map((r, i) => <tr key={i}><td className="text-sm text-black">{r.name}</td><td className="text-xs text-black/60">{r.group}</td><td className="text-right text-sm">{formatINR(r.amount)}</td></tr>)}
+                <tr className="bg-black/5"><td colSpan={2} className="font-semibold text-sm text-black">Total Income</td><td className="text-right font-semibold text-sm text-green-400">{formatINR((report as PLReport).totalIncome)}</td></tr>
               </tbody>
             </table>
           </div>
           <div className="card-luxury overflow-hidden">
-            <div className="px-5 py-3 border-b border-surface-hover bg-red-900/20">
+            <div className="px-5 py-3 border-b border-black/10 bg-red-900/20">
               <h3 className="text-sm font-medium text-red-400">Expenses</h3>
             </div>
             <table className="table-luxury">
               <thead><tr><th>Account</th><th>Group</th><th className="text-right">Amount (₹)</th></tr></thead>
               <tbody>
-                {(report as PLReport).expense.map((r, i) => <tr key={i}><td className="text-sm text-ink">{r.name}</td><td className="text-xs text-ink-secondary">{r.group}</td><td className="text-right text-sm">{formatINR(r.amount)}</td></tr>)}
-                <tr className="bg-surface-hover"><td colSpan={2} className="font-semibold text-sm text-ink">Total Expenses</td><td className="text-right font-semibold text-sm text-red-400">{formatINR((report as PLReport).totalExpense)}</td></tr>
+                {(report as PLReport).expense.map((r, i) => <tr key={i}><td className="text-sm text-black">{r.name}</td><td className="text-xs text-black/60">{r.group}</td><td className="text-right text-sm">{formatINR(r.amount)}</td></tr>)}
+                <tr className="bg-black/5"><td colSpan={2} className="font-semibold text-sm text-black">Total Expenses</td><td className="text-right font-semibold text-sm text-red-400">{formatINR((report as PLReport).totalExpense)}</td></tr>
               </tbody>
             </table>
           </div>
           <div className="md:col-span-2 card-luxury p-5 flex items-center justify-between">
-            <span className="font-display text-lg font-light text-ink">Net {(report as PLReport).netProfit >= 0 ? "Profit" : "Loss"}</span>
+            <span className="font-display text-lg font-light text-black">Net {(report as PLReport).netProfit >= 0 ? "Profit" : "Loss"}</span>
             <span className={`text-xl font-semibold ${(report as PLReport).netProfit >= 0 ? "text-green-400" : "text-red-400"}`}>{formatINR(Math.abs((report as PLReport).netProfit))}</span>
           </div>
         </div>
@@ -277,22 +278,22 @@ export default function AccountingPage() {
       {tab === "balance" && report && !Array.isArray(report) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card-luxury overflow-hidden">
-            <div className="px-5 py-3 border-b border-surface-hover"><h3 className="text-sm font-medium text-ink">Assets</h3></div>
+            <div className="px-5 py-3 border-b border-black/10"><h3 className="text-sm font-medium text-black">Assets</h3></div>
             <table className="table-luxury">
               <thead><tr><th>Account</th><th>Group</th><th className="text-right">Amount (₹)</th></tr></thead>
               <tbody>
-                {(report as BalanceReport).assets.map((r, i) => <tr key={i}><td className="text-sm text-ink">{r.name}</td><td className="text-xs text-ink-secondary">{r.group}</td><td className="text-right text-sm">{formatINR(r.amount)}</td></tr>)}
-                <tr className="bg-surface-hover"><td colSpan={2} className="font-semibold text-sm text-ink">Total Assets</td><td className="text-right font-semibold text-sm">{formatINR((report as BalanceReport).assets.reduce((s, r) => s + r.amount, 0))}</td></tr>
+                {(report as BalanceReport).assets.map((r, i) => <tr key={i}><td className="text-sm text-black">{r.name}</td><td className="text-xs text-black/60">{r.group}</td><td className="text-right text-sm">{formatINR(r.amount)}</td></tr>)}
+                <tr className="bg-black/5"><td colSpan={2} className="font-semibold text-sm text-black">Total Assets</td><td className="text-right font-semibold text-sm">{formatINR((report as BalanceReport).assets.reduce((s, r) => s + r.amount, 0))}</td></tr>
               </tbody>
             </table>
           </div>
           <div className="card-luxury overflow-hidden">
-            <div className="px-5 py-3 border-b border-surface-hover"><h3 className="text-sm font-medium text-ink">Liabilities & Equity</h3></div>
+            <div className="px-5 py-3 border-b border-black/10"><h3 className="text-sm font-medium text-black">Liabilities & Equity</h3></div>
             <table className="table-luxury">
               <thead><tr><th>Account</th><th>Group</th><th className="text-right">Amount (₹)</th></tr></thead>
               <tbody>
-                {(report as BalanceReport).liabilities.map((r, i) => <tr key={i}><td className="text-sm text-ink">{r.name}</td><td className="text-xs text-ink-secondary">{r.group}</td><td className="text-right text-sm">{formatINR(r.amount)}</td></tr>)}
-                <tr className="bg-surface-hover"><td colSpan={2} className="font-semibold text-sm text-ink">Total</td><td className="text-right font-semibold text-sm">{formatINR((report as BalanceReport).liabilities.reduce((s, r) => s + r.amount, 0))}</td></tr>
+                {(report as BalanceReport).liabilities.map((r, i) => <tr key={i}><td className="text-sm text-black">{r.name}</td><td className="text-xs text-black/60">{r.group}</td><td className="text-right text-sm">{formatINR(r.amount)}</td></tr>)}
+                <tr className="bg-black/5"><td colSpan={2} className="font-semibold text-sm text-black">Total</td><td className="text-right font-semibold text-sm">{formatINR((report as BalanceReport).liabilities.reduce((s, r) => s + r.amount, 0))}</td></tr>
               </tbody>
             </table>
           </div>
@@ -327,22 +328,22 @@ export default function AccountingPage() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="label-luxury mb-0">Ledger Entries</label>
-              <button onClick={() => setEntries(e => [...e, emptyEntry()])} className="text-xs text-gold hover:text-gold-light">+ Add Entry</button>
+              <button onClick={() => setEntries(e => [...e, emptyEntry()])} className="text-xs text-secondary hover:text-black">+ Add Entry</button>
             </div>
-            <div className="border border-surface-hover rounded overflow-hidden">
+            <div className="border border-black/10 rounded overflow-hidden">
               <table className="w-full text-xs">
-                <thead className="bg-surface-hover">
+                <thead className="bg-black/5">
                   <tr>
-                    <th className="px-3 py-2 text-left text-ink-muted">Ledger</th>
-                    <th className="px-2 py-2 text-center text-ink-muted w-20">DR/CR</th>
-                    <th className="px-2 py-2 text-right text-ink-muted w-28">Amount (₹)</th>
-                    <th className="px-2 py-2 text-left text-ink-muted">Narration</th>
+                    <th className="px-3 py-2 text-left text-black/40">Ledger</th>
+                    <th className="px-2 py-2 text-center text-black/40 w-20">DR/CR</th>
+                    <th className="px-2 py-2 text-right text-black/40 w-28">Amount (₹)</th>
+                    <th className="px-2 py-2 text-left text-black/40">Narration</th>
                     <th className="w-8" />
                   </tr>
                 </thead>
                 <tbody>
                   {entries.map((e, i) => (
-                    <tr key={i} className="border-t border-surface-hover">
+                    <tr key={i} className="border-t border-black/10">
                       <td className="px-2 py-1">
                         <select value={e.ledgerId} onChange={ev => updateEntry(i, "ledgerId", ev.target.value)} className="input-luxury text-xs py-1">
                           <option value="">Select ledger...</option>
@@ -362,7 +363,7 @@ export default function AccountingPage() {
                         <input value={e.narration} onChange={ev => updateEntry(i, "narration", ev.target.value)} className="input-luxury text-xs py-1" placeholder="Optional" />
                       </td>
                       <td className="px-1 py-1">
-                        {entries.length > 2 && <button onClick={() => setEntries(es => es.filter((_, j) => j !== i))} className="text-ink-muted hover:text-danger px-1">×</button>}
+                        {entries.length > 2 && <button onClick={() => setEntries(es => es.filter((_, j) => j !== i))} className="text-black/40 hover:text-danger px-1">×</button>}
                       </td>
                     </tr>
                   ))}
@@ -376,7 +377,7 @@ export default function AccountingPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2 border-t border-surface-hover">
+          <div className="flex justify-end gap-3 pt-2 border-t border-black/10">
             <button onClick={() => setShowVoucherModal(false)} className="btn-ghost text-sm">Cancel</button>
             <button onClick={saveVoucher} disabled={saving || !balanced || !vForm.narration} className="btn-gold text-sm disabled:opacity-50">
               {saving ? "Saving..." : "Post Voucher"}
@@ -423,7 +424,7 @@ export default function AccountingPage() {
             <label className="label-luxury">Description</label>
             <input value={lForm.description} onChange={e => setLForm(f => ({ ...f, description: e.target.value }))} className="input-luxury" placeholder="Optional description" />
           </div>
-          <div className="flex justify-end gap-3 pt-2 border-t border-surface-hover">
+          <div className="flex justify-end gap-3 pt-2 border-t border-black/10">
             <button onClick={() => setShowLedgerModal(false)} className="btn-ghost text-sm">Cancel</button>
             <button onClick={saveLedger} disabled={saving || !lForm.name} className="btn-gold text-sm disabled:opacity-50">
               {saving ? "Saving..." : "Create Ledger"}

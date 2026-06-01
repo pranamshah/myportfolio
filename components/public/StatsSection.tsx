@@ -1,49 +1,77 @@
+const STATS = [
+  { label: "FREIGHT MODES", value: "SEA & AIR" },
+  { label: "CLEARANCE", value: "CHA COORDINATED" },
+  { label: "BASE PORT", value: "CHENNAI" },
+  { label: "ESTABLISHED", value: "SINCE 2026" },
+];
+
 const WHY = [
-  {
-    title: "Full-Service Freight",
-    desc: "We handle sea freight, air freight, and land transport — all under one roof, end to end.",
-  },
-  {
-    title: "Real-Time Tracking",
-    desc: "Live shipment status updates at every milestone through your secure client portal.",
-  },
-  {
-    title: "Transparent Billing",
-    desc: "Detailed invoices with itemised charges — no surprises, no hidden fees.",
-  },
-  {
-    title: "Dedicated Support",
-    desc: "One point of contact for all your logistics queries — always available when you need us.",
-  },
+  { title: "Full-Service Freight", desc: "Sea freight, air freight, and door-to-door delivery managed under one roof — end to end." },
+  { title: "Real-Time Tracking", desc: "Live shipment status at every milestone — vessel, port, customs — in your secure portal." },
+  { title: "Transparent Billing", desc: "Itemised invoices with no hidden fees. Full visibility into every charge before it's raised." },
+  { title: "CHA Coordination", desc: "We coordinate customs clearance through trusted licensed CHA partners for smooth port handling." },
 ];
 
 export default function StatsSection() {
   return (
-    <section id="about" className="py-24 bg-[#FAFAF8]">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-14">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A452] mb-3">Why Choose Us</p>
-          <h2 className="font-display text-[clamp(1.8rem,3.5vw,3rem)] font-light text-gray-900 mb-3">
-            Your Freight, Handled<br />From Start to Finish
-          </h2>
-          <div className="w-10 h-px bg-[#C9A452] mx-auto mb-5" />
-          <p className="text-gray-500 max-w-lg mx-auto text-sm leading-relaxed">
-            Navkar Impex is a freight forwarding agency based in Chennai. We coordinate every step
-            of your cargo's journey — from booking to final delivery — including customs, CHA, and documentation.
-          </p>
+    <section id="about" className="py-36 overflow-hidden" style={{ backgroundColor: "#000000" }}>
+      <div className="px-5 md:px-20 max-w-[1440px] mx-auto">
+
+        {/* Headline + description */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-10 reveal">
+          <div className="max-w-xl">
+            <h2 className="font-display text-white mb-5"
+              style={{
+                fontSize: "clamp(36px, 5vw, 64px)",
+                fontWeight: 600,
+                fontStyle: "italic",
+                lineHeight: "1.2",
+                letterSpacing: "-0.02em",
+              }}>
+              Precision.<br />Standard.
+            </h2>
+            <p className="font-sans text-lg text-white/55 leading-relaxed">
+              Every shipment, every document, every clearance. Navkar Impex provides clinical accuracy for your cargo and your peace of mind.
+            </p>
+          </div>
+          <div className="w-full md:w-auto">
+            <a href="/login"
+              className="group w-full md:w-auto flex items-center gap-4 font-mono text-[11px] tracking-[0.12em] text-white/60 hover:text-white transition-colors">
+              <span className="h-px w-12 bg-white/20 transition-all duration-300 group-hover:w-20 group-hover:bg-white" />
+              TRACK SHIPMENT
+            </a>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {WHY.map(({ title, desc }) => (
-            <div key={title} className="bg-white rounded-xl p-6 border border-gray-100 hover:shadow-md transition-all duration-200">
-              <div className="w-8 h-8 rounded-lg bg-[#C9A452]/10 flex items-center justify-center mb-4">
-                <div className="w-2 h-2 rounded-full bg-[#C9A452]" />
-              </div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">{title}</h3>
-              <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
+        {/* Stats bento */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-white/10 pt-12 mb-24 reveal">
+          {STATS.map(({ label, value }) => (
+            <div key={label} className="group flex flex-col">
+              <span className="font-mono text-[10px] tracking-[0.15em] text-white/40 mb-3 uppercase">{label}</span>
+              <span className="font-display text-white group-hover:text-secondary-container transition-colors duration-300"
+                style={{
+                  fontSize: "clamp(22px, 3.5vw, 44px)",
+                  fontWeight: 700,
+                  letterSpacing: "-0.02em",
+                  fontStyle: "italic",
+                }}>
+                {value}
+              </span>
             </div>
           ))}
         </div>
+
+        {/* Why cards */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/10 border border-white/10 reveal">
+          {WHY.map(({ title, desc }) => (
+            <div key={title} className="bg-black p-8 hover:bg-white/5 transition-colors group">
+              <div className="w-1 h-8 bg-secondary mb-6 group-hover:h-10 transition-all duration-300" />
+              <h3 className="font-sans text-sm font-semibold text-white mb-3">{title}</h3>
+              <p className="font-sans text-xs text-white/45 leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+
       </div>
     </section>
   );
